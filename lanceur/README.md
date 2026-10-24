@@ -33,7 +33,7 @@ Pour revenir à One UI : même menu → **One UI Home**.
 - Pont Android (lister/ouvrir les applis, batterie…) : `app/src/main/java/ca/lexos/lanceur/MainActivity.kt`
 
 ## Signature
-`app/lexos.jks` signe chaque version avec la même clé, pour que les mises à jour s'installent par-dessus.
-Le dépôt est public : pour plus de sécurité, crée ta propre clé et garde-la hors du dépôt.
+APK signé par **Alex Marceau Prevost** (certificat valide 32 ans).
+La clé est gardée dans les Secrets GitHub du dépôt (`LEXOS_KEYSTORE_B64`, `LEXOS_KEYSTORE_PASS`), jamais dans le code.
 
 Polices : Orbitron et JetBrains Mono (licence SIL OFL, dans `assets/www/polices/`).
