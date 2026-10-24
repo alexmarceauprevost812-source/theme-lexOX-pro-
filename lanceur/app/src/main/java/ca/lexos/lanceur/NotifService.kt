@@ -23,6 +23,31 @@ class NotifService : NotificationListenerService() {
         )
         private var dernier = ""
         private var dernierT = 0L
+        @Volatile var instance: NotifService? = null
+
+        /** Notifications affichables sur le verrouillage (les plus récentes d'abord). */
+        fun liste(ctx: Context): org.json.JSONArray {
+            val out = org.json.JSONArray()
+            val s = instance ?: return out
+            val pm = ctx.packageManager
+            val vues = HashSet<String>()
+            try {
+                s.activeNotifications
+                    .filter { (it.notification.flags and (Notification.FLAG_ONGOING_EVENT or Notification.FLAG_GROUP_SUMMARY)) == 0 }
+                    .filter { it.packageName != ctx.packageName && it.packageName != "android" }
+                    .sortedByDescending { it.postTime }
+                    .forEach { sbn ->
+                        val ex = sbn.notification.extras
+                        val titre = ex.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: return@forEach
+                        val texte = ex.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+                        if (!vues.add(sbn.packageName + titre) || out.length() >= 6) return@forEach
+                        val app = try { pm.getApplicationLabel(pm.getApplicationInfo(sbn.packageName, 0)).toString() } catch (e: Exception) { sbn.packageName }
+                        out.put(org.json.JSONObject().put("app", app).put("pkg", sbn.packageName)
+                            .put("titre", titre).put("texte", texte).put("t", sbn.postTime))
+                    }
+            } catch (_: Exception) {}
+            return out
+        }
 
         fun enregistrer(ctx: Context, type: String, nom: String, pkg: String) {
             ctx.getSharedPreferences("lexos", Context.MODE_PRIVATE).edit()
@@ -30,6 +55,9 @@ class NotifService : NotificationListenerService() {
                 .putLong("evt_t", System.currentTimeMillis()).apply()
         }
     }
+
+    override fun onListenerConnected() { instance = this }
+    override fun onListenerDisconnected() { if (instance === this) instance = null }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val pkg = sbn.packageName

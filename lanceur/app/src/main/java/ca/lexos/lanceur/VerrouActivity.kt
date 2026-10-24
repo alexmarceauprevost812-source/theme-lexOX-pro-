@@ -135,6 +135,33 @@ class VerrouActivity : Activity() {
                 .put("t", pr.getLong("evt_t", 0L)).toString()
         }
 
+        /** Prochains événements de l'agenda (48 h), si l'accès à l'agenda est permis. */
+        @JavascriptInterface
+        fun agenda(): String {
+            val out = org.json.JSONArray()
+            if (checkSelfPermission(android.Manifest.permission.READ_CALENDAR) != android.content.pm.PackageManager.PERMISSION_GRANTED) return "null"
+            try {
+                val now = System.currentTimeMillis()
+                val uri = android.provider.CalendarContract.Instances.CONTENT_URI.buildUpon().also {
+                    android.content.ContentUris.appendId(it, now)
+                    android.content.ContentUris.appendId(it, now + 48L * 3600 * 1000)
+                }.build()
+                contentResolver.query(uri, arrayOf(
+                    android.provider.CalendarContract.Instances.TITLE,
+                    android.provider.CalendarContract.Instances.BEGIN,
+                    android.provider.CalendarContract.Instances.ALL_DAY
+                ), null, null, android.provider.CalendarContract.Instances.BEGIN + " ASC")?.use { c ->
+                    while (c.moveToNext() && out.length() < 3) {
+                        out.put(JSONObject().put("titre", c.getString(0) ?: "").put("debut", c.getLong(1)).put("jour", c.getInt(2) == 1))
+                    }
+                }
+            } catch (_: Exception) {}
+            return out.toString()
+        }
+
+        @JavascriptInterface
+        fun notifications(): String = NotifService.liste(this@VerrouActivity).toString()
+
         @JavascriptInterface
         fun calme(): Boolean = getSharedPreferences("lexos", MODE_PRIVATE).getBoolean("calme", false)
 

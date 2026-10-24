@@ -33,6 +33,20 @@ class ClavierView(ctx: Context) : View(ctx) {
     private val GRIS = Color.rgb(0x9A, 0x9A, 0x9A)
     private val ORANGE = Color.rgb(0xE8, 0x59, 0x0C)
     private val BOUTON = Color.rgb(0xC8, 0x4B, 0x0A)
+    private val NEON = Color.rgb(0xFF, 0x7A, 0x1A)   // lettres : orange néon gamer LexOS
+    private val LIME = Color.rgb(0xA6, 0xFF, 0x00)   // chiffres : vert lime
+    private val OR = Color.rgb(0xFF, 0xC5, 0x3D)     // symboles : jaune or
+
+    /** Couleur d'un caractère : lettre orange, chiffre vert lime, symbole jaune or. */
+    private fun couleurDe(lab: String): Int {
+        val ch = lab.firstOrNull() ?: return NEON
+        return when {
+            lab.length == 1 && ch.isDigit() -> LIME
+            lab.length == 1 && ch.isLetter() -> NEON
+            lab.length == 1 -> OR
+            else -> NEON
+        }
+    }
 
     // ----- codes -----
     private companion object {
@@ -125,7 +139,7 @@ class ClavierView(ctx: Context) : View(ctx) {
             )
             else -> listOf(
                 rangeeTerminal(),
-                symboles("~`|•√π÷×¶∆"),
+                symboles("~`|•±¤¨÷×¶"),
                 symboles("€£¥^°={}\\%"),
                 listOf(Touche("?123", null, SYMB, 1.5f)) + symboles("©®™[]<>") + listOf(Touche("⌫", null, SUPPR, 1.5f)),
                 bas
@@ -189,38 +203,43 @@ class ClavierView(ctx: Context) : View(ctx) {
         val dt = if (dernierFrame == 0L) 16L else (now - dernierFrame).coerceAtMost(64)
         dernierFrame = now
         var anime = false
-        val rayon = dp(10f)
+        val rayon = dp(10f)   // (remplacé par une forme ronde uniforme ci-dessous)
 
         for ((i, r) in rangees.withIndex()) for (t in r) {
             if (!t.appuyee && t.eclat > 0f) { t.eclat = (t.eclat - dt / 220f).coerceAtLeast(0f); anime = true }
             val speciale = t.code != TEXTE && t.code != ESPACE
             val active = (t.code == MAJ && maj > 0) || (t.code == CTRL && ctrl)
+            // thème noir : chaque touche est encerclée, même forme ronde partout
             val fond = when {
                 t.code == ENTREE -> BOUTON
                 active -> BOUTON
-                t.terminal -> Color.rgb(0x0D, 0x0D, 0x0D)
-                speciale -> MAT2
-                else -> MAT
+                else -> Color.rgb(0x05, 0x05, 0x05)
             }
             pFond.color = fond
             val r2 = RectF(t.r)
             if (t.eclat > 0f) { val k = dp(1.5f) * t.eclat; r2.inset(k, k) }
-            c.drawRoundRect(r2, rayon, rayon, pFond)
-            pBord.color = if (t.eclat > 0f) melange(LIGNE, ORANGE, t.eclat) else LIGNE
-            pBord.strokeWidth = dp(1f) + dp(1.5f) * t.eclat
-            c.drawRoundRect(r2, rayon, rayon, pBord)
-            if (t.eclat > 0f) {   // halo orange
-                pFond.color = Color.argb((60 * t.eclat).toInt(), 0xE8, 0x59, 0x0C)
-                c.drawRoundRect(r2, rayon, rayon, pFond)
+            val rond = minOf(r2.width(), r2.height()) / 2f
+            c.drawRoundRect(r2, rond, rond, pFond)
+            val coul = couleurDe(t.label)
+            val bordBase = if (t.code == TEXTE && !t.terminal) Color.argb(150, Color.red(coul), Color.green(coul), Color.blue(coul)) else Color.rgb(0x3A, 0x3A, 0x3A)
+            pBord.color = if (t.eclat > 0f) melange(bordBase, coul, t.eclat) else bordBase
+            pBord.strokeWidth = dp(1.4f) + dp(1.6f) * t.eclat
+            c.drawRoundRect(r2, rond, rond, pBord)
+            if (t.eclat > 0f) {   // halo orange néon
+                pFond.color = Color.argb((70 * t.eclat).toInt(), Color.red(coul), Color.green(coul), Color.blue(coul))
+                c.drawRoundRect(r2, rond, rond, pFond)
             }
             // texte
             pTexte.color = when {
                 t.code == ENTREE || active -> Color.WHITE
-                t.terminal -> ORANGE
+                t.terminal -> couleurDe(t.label)
                 t.code == ESPACE -> GRIS
                 speciale -> GRIS
-                else -> BLANC
+                else -> couleurDe(t.label)   // lettre orange, chiffre lime, symbole or
             }
+            // lueur néon de la même couleur que le caractère
+            if (t.code == TEXTE || t.terminal) pTexte.setShadowLayer(dp(5f) + dp(4f) * t.eclat, 0f, 0f, pTexte.color)
+            else pTexte.clearShadowLayer()
             pTexte.textSize = when {
                 t.terminal -> dp(13f)
                 t.code == ESPACE -> dp(12f)
@@ -233,10 +252,11 @@ class ClavierView(ctx: Context) : View(ctx) {
             if (t.code == ESPACE) lab = "lexos pro" + if (curseur) "▮" else " "
             val ty = r2.centerY() - (pTexte.descent() + pTexte.ascent()) / 2
             c.drawText(lab, r2.centerX(), ty, pTexte)
+            pTexte.clearShadowLayer()
             // petit chiffre en appui long sur la rangée du haut
             if (mode == 0 && i == 1 && t.code == TEXTE) {
-                pTexte.textSize = dp(9f); pTexte.color = ORANGE
-                c.drawText((CHIFFRES.indexOf(t.label) + 1).mod(10).toString(), r2.right - dp(7f), r2.top + dp(12f), pTexte)
+                pTexte.textSize = dp(9f); pTexte.color = LIME
+                c.drawText((CHIFFRES.indexOf(t.label) + 1).mod(10).toString(), r2.right - rond * 0.55f, r2.top + dp(12f), pTexte)
             }
             if (t.code == ESPACE) {   // trait orange qui respire
                 pFond.color = Color.argb(140 + (if (curseur) 80 else 0), 0xE8, 0x59, 0x0C)
@@ -252,8 +272,9 @@ class ClavierView(ctx: Context) : View(ctx) {
             if (b.top < 0f) b.top = 0f
             pFond.color = Color.rgb(0x0A, 0x0A, 0x0A); c.drawRoundRect(b, dp(12f), dp(12f), pFond)
             pBord.color = ORANGE; pBord.strokeWidth = dp(2f); c.drawRoundRect(b, dp(12f), dp(12f), pBord)
-            pTexte.color = Color.WHITE; pTexte.textSize = dp(28f)
+            pTexte.color = couleurDe(t.label); pTexte.textSize = dp(30f); pTexte.setShadowLayer(dp(10f), 0f, 0f, pTexte.color)
             c.drawText(majuscule(t.label), b.centerX(), b.centerY() - (pTexte.descent() + pTexte.ascent()) / 2, pTexte)
+            pTexte.clearShadowLayer()
         }
 
         // barre d'accents en appui long
@@ -272,7 +293,7 @@ class ClavierView(ctx: Context) : View(ctx) {
                     pFond.color = BOUTON
                     c.drawRoundRect(cx - cw / 2 + dp(2f), rAccents.top + dp(5f), cx + cw / 2 - dp(2f), rAccents.bottom - dp(5f), dp(8f), dp(8f), pFond)
                 }
-                pTexte.color = Color.WHITE; pTexte.textSize = dp(20f)
+                pTexte.color = if (k == accentChoisi) Color.WHITE else couleurDe(a); pTexte.textSize = dp(20f)
                 c.drawText(majuscule(a), cx, rAccents.centerY() - (pTexte.descent() + pTexte.ascent()) / 2, pTexte)
             }
         }

@@ -333,6 +333,15 @@ class MainActivity : Activity() {
             getSharedPreferences("lexos", MODE_PRIVATE).edit().putBoolean("calme", on).apply()
         }
 
+        @JavascriptInterface
+        fun agendaPermis(): Boolean =
+            checkSelfPermission(android.Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED
+
+        @JavascriptInterface
+        fun demanderAgenda() {
+            runOnUiThread { requestPermissions(arrayOf(android.Manifest.permission.READ_CALENDAR), 8) }
+        }
+
         /** Essai : bannière par-dessus les applis avec un nom. */
         @JavascriptInterface
         fun testBanniere(type: String, nom: String) {

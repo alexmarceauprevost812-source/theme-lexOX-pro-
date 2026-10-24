@@ -243,6 +243,9 @@ img{-webkit-user-drag:none}
 #choix .app.pris .tuile{box-shadow:inset 0 0 0 2px var(--orange),0 0 14px rgba(232,89,12,.5)}
 #choix .app.pris::after{content:'✓';position:absolute;top:-4px;right:6px;width:20px;height:20px;border-radius:10px;background:var(--bouton);color:#fff;font-size:12px;line-height:20px;text-align:center}
 
+#villeSheet{position:fixed;left:0;right:0;bottom:0;z-index:41;padding:16px 16px calc(var(--bas) + 14px);background:#0A0A0A;border-top:1px solid var(--ligne);border-radius:22px 22px 0 0;display:flex;flex-direction:column;gap:10px;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#villeSheet.ouvert{transform:none}
+#villeSheet .titre{font-size:12px;color:var(--orange)}
 /* ---------- menu & toast ---------- */
 #menu{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:16px 16px calc(var(--bas) + 10px);background:#0A0A0A;border-top:1px solid var(--ligne);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:8px}
 #menu.ouvert{transform:none}
@@ -363,6 +366,11 @@ img{-webkit-user-drag:none}
   <button class="btn-o" id="choixOk" style="width:100%;height:50px;color:#fff;font-size:14px;font-weight:700">$ enregistrer</button>
 </section>
 <div id="voile"></div>
+<form id="villeForm"><div id="villeSheet">
+  <div class="titre">$ meteo --ville</div>
+  <div class="invite"><label for="villeNom">&gt;</label><input id="villeNom" type="text" autocomplete="off" placeholder="ex. Montréal"><button class="btn-o" type="submit" aria-label="Enregistrer"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+  <div id="villeEtat" style="font-size:11px;color:#9A9A9A">météo gratuite Open-Meteo · sans compte</div>
+</div></form>
 <div id="menu" role="dialog" aria-label="Menu LexOS">
   <div class="titre">$ lexos-config</div>
   <button id="mFav">★ épingler / retirer de l'accueil</button>
@@ -372,6 +380,8 @@ img{-webkit-user-drag:none}
   <button id="mNoms">✉ noms animés sms / appels</button>
   <button id="mClavier">⌨ clavier LexOS PRO</button>
   <button id="mVerrou">🔒 écran de verrouillage LexOS</button>
+  <button id="mMeteo">☀ météo du verrouillage</button>
+  <button id="mAgenda">▦ agenda du verrouillage</button>
   <button id="mFond">▣ changer l'image de fond</button>
   <button id="mOrig">↺ remettre les images LexOS</button>
   <button id="mAnim">≈ animations : on</button>
@@ -394,7 +404,7 @@ const B = window.LexOS || {
     ['Play Store','com.android.vending'],['Gmail','com.google.android.gm'],['Spotify','com.spotify.music'],['Calendrier','com.samsung.android.calendar']
   ].map(([label,pkg])=>({label,pkg,cls:pkg+'.Main'}))),
   getIcon: () => '', launch: (p)=>console.log('launch',p), appInfo(){}, battery: () => 78, device: () => 'SM-A556W',
-  openSettings(){}, openWallpaper(){}, etat:()=>'{"notifs":true,"bannieres":true,"clavier":false}', activerNotifs(){}, activerBannieres(){}, activerClavier(){}, choisirClavier(){}, testBanniere(){}, appeler(n){console.log('appel',n)}, setVerrou(){}, essaiVerrou(){}, setCalme(){}, expandNotifications(){}, search(q){console.log('search',q)}, vibrate(){}
+  openSettings(){}, openWallpaper(){}, etat:()=>'{"notifs":true,"bannieres":true,"clavier":false}', activerNotifs(){}, activerBannieres(){}, activerClavier(){}, choisirClavier(){}, testBanniere(){}, appeler(n){console.log('appel',n)}, setVerrou(){}, essaiVerrou(){}, setCalme(){}, agendaPermis:()=>false, demanderAgenda(){}, expandNotifications(){}, search(q){console.log('search',q)}, vibrate(){}
 };
 
 /* ===== tes icônes LexOS, par application ===== */
@@ -762,11 +772,11 @@ function ouvrirMenu(app){
   if (app) $('#mEdge').textContent=(edge&&edge.includes(app.pkg)?'⇥ retirer du panneau latéral':'⇤ ajouter au panneau latéral');
   if (app) $('#mFav').textContent=(favoris.includes(app.pkg)?'★ retirer de l\'accueil':'☆ épingler à l\'accueil')+' — '+app.label.toLowerCase();
   $('#mAnim').textContent='≈ animations : '+(calme?'off':'on');
-  $('#mNoms').style.display=$('#mClavier').style.display=$('#mVerrou').style.display=app?'none':'block'; if(!app) majMenuEtat();
+  $('#mNoms').style.display=$('#mClavier').style.display=$('#mVerrou').style.display=$('#mMeteo').style.display=$('#mAgenda').style.display=app?'none':'block'; if(!app) majMenuEtat();
   $('#menu').classList.add('ouvert'); $('#voile').classList.add('on');
 }
 function fermerMenu(){ $('#menu').classList.remove('ouvert'); $('#voile').classList.remove('on'); }
-$('#voile').onclick=()=>{ fermerMenu(); fermerEdge(); };
+$('#voile').onclick=()=>{ fermerMenu(); fermerEdge(); $('#villeSheet').classList.remove('ouvert'); };
 $('#mFav').onclick=()=>{ if(!cible) return;
   if (favoris.includes(cible.pkg)) favoris=favoris.filter(p=>p!==cible.pkg);
   else { favoris.push(cible.pkg); if(favoris.length>NB_FAV) favoris.shift(); }
@@ -778,6 +788,8 @@ function etat(){ try { return JSON.parse(B.etat()); } catch(e){ return {notifs:f
 function majMenuEtat(){ const e=etat();
   $('#mNoms').textContent='✉ noms animés sms / appels : '+(e.notifs&&e.bannieres?'on — essayer':!e.notifs?'activer (1/2 notifications)':'activer (2/2 bannières)');
   $('#mClavier').textContent='⌨ clavier LexOS PRO : '+(e.clavier?'choisir':'activer');
+  const v=lire('lexos.ville',null); $('#mMeteo').textContent='☀ météo : '+(v?v.nom.toLowerCase():'choisir ta ville');
+  let ag=false; try{ ag=B.agendaPermis(); }catch(e){} $('#mAgenda').textContent='▦ agenda du verrouillage : '+(ag?'on':'autoriser');
   $('#mVerrou').textContent='🔒 verrouillage LexOS : '+(!e.bannieres?'activer':e.verrou?'on — essayer':'off — activer'); }
 $('#mNoms').onclick=()=>{ const e=etat(); fermerMenu();
   if (!e.notifs){ toast('autorise <b style="color:#E8590C">LexOS PRO</b> dans « Accès aux notifications »'); setTimeout(()=>B.activerNotifs(),600); }
@@ -788,6 +800,15 @@ $('#mVerrou').onclick=()=>{ const e=etat(); fermerMenu();
   if (!e.verrou){ B.setVerrou(true); toast('<span style="color:#E8590C">[ OK ]</span> verrouillage LexOS activé'); }
   B.essaiVerrou(); };
 $('#mVerrou').addEventListener('contextmenu',ev=>ev.preventDefault());
+$('#mAgenda').onclick=()=>{ fermerMenu(); try{ if(!B.agendaPermis()) B.demanderAgenda(); else toast('<span style="color:#E8590C">[ OK ]</span> agenda déjà autorisé'); }catch(e){} };
+$('#mMeteo').onclick=()=>{ fermerMenu(); $('#villeSheet').classList.add('ouvert'); $('#voile').classList.add('on'); setTimeout(()=>$('#villeNom').focus(),300); };
+$('#villeForm').addEventListener('submit',async ev=>{ ev.preventDefault();
+  const q=$('#villeNom').value.trim(); if(!q) return; $('#villeEtat').textContent='$ recherche « '+q+' »…';
+  try{ const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=fr&name='+encodeURIComponent(q)); const j=await r.json();
+    const v=j.results&&j.results[0]; if(!v){ $('#villeEtat').textContent='[ ERREUR ] ville introuvable'; return; }
+    ecrire('lexos.ville',{nom:v.name,lat:v.latitude,lon:v.longitude}); try{ localStorage.removeItem('lexos.meteo'); }catch(e){}
+    $('#villeSheet').classList.remove('ouvert'); $('#voile').classList.remove('on'); toast('<span style="color:#E8590C">[ OK ]</span> météo : '+v.name+(v.admin1?', '+v.admin1:''));
+  }catch(e){ $('#villeEtat').textContent='[ ERREUR ] pas de connexion'; } });
 $('#mClavier').onclick=()=>{ const e=etat(); fermerMenu(); if (e.clavier) B.choisirClavier(); else { toast('active <b style="color:#E8590C">Clavier LexOS PRO</b>'); setTimeout(()=>B.activerClavier(),600); } };
 $('#mInfo').onclick=()=>{ if(cible) B.appInfo(cible.pkg); fermerMenu(); };
 /* ===== photo du widget et image de fond choisies par l'utilisateur ===== */
