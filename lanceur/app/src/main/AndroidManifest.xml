@@ -63,6 +63,15 @@
             </intent-filter>
         </service>
 
+        <!-- Émojis LexOS partagés comme images par le clavier. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.emojis"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/fichiers" />
+        </provider>
+
         <!-- Clavier LexOS PRO. -->
         <service
             android:name=".ClavierService"

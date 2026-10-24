@@ -2,6 +2,8 @@ package ca.lexos.lanceur
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -54,6 +56,8 @@ class ClavierView(ctx: Context) : View(ctx) {
         const val SYMB = -5; const val ABC = -6; const val CTRL = -7; const val ESC = -8; const val TAB = -9
         const val GAUCHE = -10; const val HAUT = -11; const val BAS = -12; const val DROITE = -13; const val SYMB2 = -14
         const val GLOBE = -15
+        const val EMOJIS = -16; const val EMOJI = -17; const val EMO_AVANT = -18; const val EMO_APRES = -19
+        const val PAR_PAGE = 20
     }
 
     private class Touche(val label: String, val sortie: String?, val code: Int, val poids: Float = 1f, val terminal: Boolean = false) {
@@ -110,19 +114,47 @@ class ClavierView(ctx: Context) : View(ctx) {
         Touche("↓", null, BAS, 0.9f, true), Touche("→", null, DROITE, 0.9f, true)
     )
 
+    // ----- émojis LexOS (assets/emojis/*.png) -----
+    private val emojis: List<String> by lazy {
+        (context.assets.list("emojis") ?: emptyArray()).filter { it.endsWith(".png") }.map { it.removeSuffix(".png") }.sorted()
+    }
+    private val imagesEmoji = HashMap<String, Bitmap?>()
+    private var pageEmoji = 0
+    private fun imageEmoji(n: String): Bitmap? = imagesEmoji.getOrPut(n) {
+        try { context.assets.open("emojis/$n.png").use { BitmapFactory.decodeStream(it) } } catch (e: Exception) { null }
+    }
+    private fun rangeesEmoji(): List<List<Touche>> {
+        val pages = maxOf(1, (emojis.size + PAR_PAGE - 1) / PAR_PAGE)
+        pageEmoji = pageEmoji.coerceIn(0, pages - 1)
+        val page = emojis.drop(pageEmoji * PAR_PAGE).take(PAR_PAGE)
+        val r = (0 until 4).map { k -> (0 until 5).map { j ->
+            val n = page.getOrNull(k * 5 + j); if (n != null) Touche("", n, EMOJI) else Touche(" ", null, TEXTE + 999)
+        } }
+        val bas = listOf(
+            Touche("abc", null, ABC, 1.5f),
+            Touche("◀", null, EMO_AVANT, 1f),
+            Touche("${pageEmoji + 1}/$pages", null, TEXTE + 999, 1.4f),
+            Touche("▶", null, EMO_APRES, 1f),
+            Touche("⌫", null, SUPPR, 1.5f)
+        )
+        return r + listOf(bas)
+    }
+
     private fun lettres(s: String) = s.map { Touche(it.toString(), it.toString(), TEXTE) }
     private fun symboles(s: String) = s.map { Touche(it.toString(), it.toString(), TEXTE) }
 
     private fun construire() {
         val bas = listOf(
             Touche(if (mode == 0) "?123" else "abc", null, if (mode == 0) SYMB else ABC, 1.5f),
-            Touche("⌨", null, GLOBE, 1f),
-            Touche(",", ",", TEXTE, 1f),
-            Touche("lexos pro", " ", ESPACE, 4f),
+            Touche("⌨", null, GLOBE, 0.9f),
+            Touche("☺", null, EMOJIS, 0.9f),
+            Touche(",", ",", TEXTE, 0.9f),
+            Touche("lexos pro", " ", ESPACE, 3.6f),
             Touche(".", ".", TEXTE, 1f),
             Touche("⏎", null, ENTREE, 1.5f)
         )
         rangees = when (mode) {
+            3 -> rangeesEmoji()
             0 -> listOf(
                 rangeeTerminal(),
                 lettres("qwertyuiop"),
@@ -207,6 +239,21 @@ class ClavierView(ctx: Context) : View(ctx) {
 
         for ((i, r) in rangees.withIndex()) for (t in r) {
             if (!t.appuyee && t.eclat > 0f) { t.eclat = (t.eclat - dt / 220f).coerceAtLeast(0f); anime = true }
+            if (t.code == EMOJI) {   // émoji LexOS : l'image, qui grossit un peu quand on la touche
+                val bmp = t.sortie?.let { imageEmoji(it) }
+                if (bmp != null) {
+                    val cote = minOf(t.r.width(), t.r.height()) * (0.96f + 0.1f * t.eclat)
+                    val dst = RectF(t.r.centerX() - cote / 2, t.r.centerY() - cote / 2, t.r.centerX() + cote / 2, t.r.centerY() + cote / 2)
+                    c.drawBitmap(bmp, null, dst, pFond.apply { color = Color.WHITE })
+                    if (t.eclat > 0f) { pBord.color = NEON; pBord.strokeWidth = dp(2f); c.drawRoundRect(dst, cote * 0.17f, cote * 0.17f, pBord) }
+                }
+                continue
+            }
+            if (t.code == TEXTE + 999) {   // case vide ou numéro de page
+                if (t.label.isNotBlank()) { pTexte.textSize = dp(12f); pTexte.color = GRIS; pTexte.clearShadowLayer()
+                    c.drawText(t.label, t.r.centerX(), t.r.centerY() - (pTexte.descent() + pTexte.ascent()) / 2, pTexte) }
+                continue
+            }
             val speciale = t.code != TEXTE && t.code != ESPACE
             val active = (t.code == MAJ && maj > 0) || (t.code == CTRL && ctrl)
             // thème noir : chaque touche est encerclée, même forme ronde partout
@@ -426,6 +473,10 @@ class ClavierView(ctx: Context) : View(ctx) {
             BAS -> s.touche(KeyEvent.KEYCODE_DPAD_DOWN)
             DROITE -> s.touche(KeyEvent.KEYCODE_DPAD_RIGHT)
             GLOBE -> s.changerClavier()
+            EMOJIS -> { mode = 3; construire() }
+            EMOJI -> if (sortie != null) s.envoyerEmoji(sortie)
+            EMO_AVANT -> { pageEmoji--; construire() }
+            EMO_APRES -> { pageEmoji = if ((pageEmoji + 1) * PAR_PAGE >= emojis.size) 0 else pageEmoji + 1; construire() }
         }
         invalidate()
     }
