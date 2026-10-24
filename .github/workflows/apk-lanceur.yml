@@ -37,11 +37,18 @@ jobs:
       - name: Clé de signature
         env:
           B64: ${{ secrets.LEXOS_KEYSTORE_B64 }}
+          PASS: ${{ secrets.LEXOS_KEYSTORE_PASS }}
         run: |
           if [ -n "$B64" ]; then
             echo "$B64" | base64 -d > "$RUNNER_TEMP/lexos.jks"
             echo "LEXOS_KEYSTORE_PATH=$RUNNER_TEMP/lexos.jks" >> "$GITHUB_ENV"
             echo "Signature : clé d'Alex Marceau Prevost"
+            T=$(wc -c < "$RUNNER_TEMP/lexos.jks"); L=${#B64}
+            if keytool -list -keystore "$RUNNER_TEMP/lexos.jks" -storepass "$PASS" -alias lexos >/dev/null 2>"$RUNNER_TEMP/k.err"; then
+              echo "::notice::Clé OK ($T octets, secret B64 de $L caractères)"
+            else
+              echo "::error::Clé refusée ($T octets, secret B64 de $L caractères, mot de passe de ${#PASS} caractères) : $(head -c 200 "$RUNNER_TEMP/k.err" | tr '\n' ' ')"
+            fi
           else
             echo "Signature : ancienne clé (ajoute les secrets LEXOS_KEYSTORE_B64 et LEXOS_KEYSTORE_PASS)"
           fi
