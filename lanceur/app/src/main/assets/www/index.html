@@ -91,6 +91,13 @@ img{-webkit-user-drag:none}
 .tuile .reflet{position:absolute;top:-20px;left:0;width:16px;height:110px;background:rgba(255,255,255,.10);animation:sheen 4s ease-in-out infinite}
 .app:active .tuile{transform:scale(.9)}
 .app .nom{font-size:10.5px;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp{position:absolute;right:3px;bottom:3px;width:21px;height:21px;border-radius:11px;background:#FF0033;box-shadow:0 0 0 1.5px #fff,0 0 10px rgba(255,0,51,.9);z-index:2;animation:pp-pouls 2.6s ease-in-out infinite}
+.pp i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;animation:pp-alterne 2.6s ease-in-out infinite}
+.pp .pp-play::before{content:'';width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #fff;margin-left:2px}
+.pp .pp-pause{gap:2px;animation-delay:-1.3s}
+.pp .pp-pause b{width:3px;height:9px;border-radius:1px;background:#fff}
+@keyframes pp-alterne{0%,40%{opacity:1;transform:scale(1)}50%,90%{opacity:0;transform:scale(.4) rotate(90deg)}100%{opacity:1;transform:scale(1)}}
+@keyframes pp-pouls{0%,100%{box-shadow:0 0 0 1.5px #fff,0 0 6px rgba(255,0,51,.7)}50%{box-shadow:0 0 0 1.5px #fff,0 0 14px rgba(255,0,51,1)}}
 .app.lance .tuile{animation:launch .38s ease-in forwards}
 
 .invite{height:50px;padding:0 6px 0 16px;border-radius:14px;background:rgba(13,13,13,.95);box-shadow:inset 0 0 0 1px var(--ligne);display:flex;align-items:center;gap:8px}
@@ -512,8 +519,7 @@ const ICONES = {
   'com.sec.android.app.camera':'camera','com.google.android.GoogleCamera':'camera',
   'com.android.settings':'reglages','com.sec.android.app.myfiles':'fichiers','com.google.android.documentsui':'fichiers',
   'com.sec.android.app.sbrowser':'navigateur','org.mozilla.firefox':'navigateur','com.brave.browser':'navigateur','com.android.chrome':'chrome',
-  'com.google.android.youtube':'youtube','app.revanced.android.youtube':'youtube','com.google.android.apps.youtube.kids':'youtube',
-  'com.google.android.apps.youtube.music':'yt-musique','com.spotify.music':'musique','com.samsung.android.app.music':'musique','com.sec.android.app.music':'musique',
+'com.spotify.music':'musique','com.samsung.android.app.music':'musique','com.sec.android.app.music':'musique',
   'com.samsung.android.app.notes':'notes','com.google.android.keep':'notes',
   'com.termux':'terminal','com.offsec.nhterm':'terminal','com.offsec.nethunter':'hacker',
   'com.anthropic.claude':'claude','com.sec.android.gallery3d':'galerie','com.google.android.apps.photos':'galerie',
@@ -531,6 +537,8 @@ function iconeLexos(app){
   if (l.includes('terminal')) return 'terminal';
   return null;
 }
+// YouTube et YouTube Music : logo officiel de l'appli + petite animation lecture / pause (rouge et blanc)
+const MEDIA_PP = new Set(['com.google.android.youtube','com.google.android.apps.youtube.music','app.revanced.android.youtube','app.revanced.android.apps.youtube.music','com.google.android.apps.youtube.kids']);
 const CATS = {
   outils:['terminal','hacker','diagnostic','fichiers','securite','mises-a-jour','opencode','reglages','partage'],
   ia:['claude','lexos-ia','ti-lex-al'],
@@ -622,8 +630,9 @@ function tuile(app, i, base){
   const img=document.createElement('img'); img.alt='';
   const lx=iconeLexos(app);
   if (lx){ img.src='icones/lexos-'+lx+'.png'; img.className='lex'; }
-  else { img.className='sys'; img.loading='lazy'; const u=B.getIcon(app.pkg); if(u) img.src=u; else { img.src= app.pkg==='com.openai.chatgpt' ? 'icones/lexos-chatgpt.png' : 'icones/lexos-terminal.png'; img.className='lex'; } }
+  else { img.className='sys'; img.loading='lazy'; const u=B.getIcon(app.pkg); if(u) img.src=u; else { img.src= app.pkg==='com.openai.chatgpt' ? 'icones/lexos-chatgpt.png' : MEDIA_PP.has(app.pkg) ? (app.pkg.includes('music')?'icones/lexos-yt-musique.png':'icones/lexos-youtube.png') : 'icones/lexos-terminal.png'; img.className='lex'; } }
   t.appendChild(img);
+  if (MEDIA_PP.has(app.pkg)){ const pp=document.createElement('span'); pp.className='pp'; pp.innerHTML='<i class="pp-play"></i><i class="pp-pause"><b></b><b></b></i>'; t.appendChild(pp); }
   const r=document.createElement('span'); r.className='reflet'; r.style.animationDelay=(i*0.37%4).toFixed(2)+'s'; t.appendChild(r);
   const n=document.createElement('span'); n.className='nom';
   if (titreDe(app) && titreDe(app).cl!=='galaxy'){ b.classList.add('anime'); n.style.color=titreDe(app).c; [...app.label.toLowerCase()].forEach((c,k)=>{ const l=document.createElement('span'); l.textContent=c; l.style.animationDelay=(k*0.12)+'s'; n.appendChild(l); }); }
@@ -993,7 +1002,7 @@ function rendreFiltres(){
 function rendreTiroir(){
   const q=$('#grep').value.trim().toLowerCase();
   let liste=APPS.filter(a=>!q||a.label.toLowerCase().includes(q)||a.pkg.includes(q));
-  if (filtre!=='tout') liste=liste.filter(a=>CATS[filtre].includes(iconeLexos(a)) || (filtre==='ia' && titreDe(a) && a.pkg==='com.openai.chatgpt'));
+  if (filtre!=='tout') liste=liste.filter(a=>CATS[filtre].includes(iconeLexos(a)) || (filtre==='media' && MEDIA_PP.has(a.pkg)) || (filtre==='ia' && titreDe(a) && a.pkg==='com.openai.chatgpt'));
   const g=$('#grilleToutes'); g.innerHTML='';
   liste.forEach((a,i)=>g.appendChild(tuile(a,i,.05)));
   $('#compte').innerHTML=liste.length+' application'+(liste.length>1?'s':'')+' · <span style="color:#E8590C">lexos-pro</span>';
