@@ -334,6 +334,26 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun batterieInfo(): String = EtatSysteme.batterie(this@MainActivity)
+
+        @JavascriptInterface
+        fun reseau(): String = EtatSysteme.reseau(this@MainActivity)
+
+        @JavascriptInterface
+        fun version(): String = try {
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "?"
+        } catch (e: Exception) { "?" }
+
+        /** Ouvre le choix de l'appli d'accueil (LexOS PRO ou One UI). */
+        @JavascriptInterface
+        fun appliAccueil() {
+            runOnUiThread {
+                try { startActivity(Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                catch (e: Exception) { startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            }
+        }
+
+        @JavascriptInterface
         fun agendaPermis(): Boolean =
             checkSelfPermission(android.Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED
 

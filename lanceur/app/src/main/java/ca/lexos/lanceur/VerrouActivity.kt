@@ -160,6 +160,12 @@ class VerrouActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun batterieInfo(): String = EtatSysteme.batterie(this@VerrouActivity)
+
+        @JavascriptInterface
+        fun reseau(): String = EtatSysteme.reseau(this@VerrouActivity)
+
+        @JavascriptInterface
         fun notifications(): String = NotifService.liste(this@VerrouActivity).toString()
 
         @JavascriptInterface

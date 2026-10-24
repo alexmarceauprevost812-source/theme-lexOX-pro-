@@ -11,8 +11,8 @@ android {
         applicationId = "ca.lexos.lanceur"
         minSdk = 26
         targetSdk = 34
-        versionCode = 8
-        versionName = "1.5.2"
+        versionCode = 9
+        versionName = "1.6"
     }
 
     // Clé de signature d'Alex Marceau Prevost : fournie par les Secrets GitHub

@@ -82,6 +82,31 @@ button{font-family:inherit}
 .fleches svg:nth-child(2){animation-delay:.15s}
 #eclair{position:fixed;inset:0;background:var(--orange);opacity:0;pointer-events:none}
 #eclair.on{animation:eclair .5s ease-out}
+
+/* ===== indicateurs LexOS : batterie + réseau ===== */
+@keyframes lx-vague{0%,100%{background:#262626;box-shadow:none}50%{background:#A6FF00;box-shadow:0 0 6px #A6FF00}}
+@keyframes lx-eclair{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes lx-onde{0%,62%,100%{filter:none}72%{filter:brightness(2.2)}}
+@keyframes lx-glitch{0%,100%{transform:none}20%{transform:translateX(-1px)}40%{transform:translateX(1px)}60%{opacity:.6}}
+.lxb{display:inline-flex;align-items:center;gap:6px;vertical-align:middle}
+.lxb .lxcorps{position:relative;display:inline-flex;gap:2px;padding:2px;margin-right:4px;border:1.5px solid #E8590C;border-radius:4px;box-shadow:0 0 6px rgba(232,89,12,.45)}
+.lxb .lxcorps::after{content:'';position:absolute;right:-5px;top:3.5px;width:3px;height:6px;border-radius:0 2px 2px 0;background:#E8590C}
+.lxb .seg{width:4px;height:9px;border-radius:1px;background:#262626}
+.lxb .seg.on{background:#E8590C;box-shadow:0 0 5px #E8590C}
+.lxb.faible .lxcorps{border-color:#FF3B30;box-shadow:0 0 8px rgba(255,59,48,.6)}
+.lxb.faible .seg.on{background:#FF3B30;box-shadow:0 0 6px #FF3B30;animation:blink 1s steps(1) infinite}
+.lxb.charge .seg:not(.on){animation:lx-vague 1.6s ease-in-out infinite}
+.lxb .pct{font-weight:700;color:#EDEDED}
+.lxb .eclair{display:none;color:#A6FF00;animation:lx-eclair 1s ease-in-out infinite}
+.lxb.charge .eclair{display:inline}
+.lxr{display:inline-flex;align-items:center;gap:6px;vertical-align:middle}
+.lxr .barres{display:inline-flex;align-items:flex-end;gap:2px;height:13px}
+.lxr .barres i{width:3px;border-radius:1px;background:#2A2A2A}
+.lxr .barres i.on{background:#E8590C;box-shadow:0 0 5px #E8590C;animation:lx-onde 2.4s ease-in-out infinite}
+.lxr .type{font-weight:700;color:#EDEDED}
+.lxr.aucun .barres i{background:#FF3B30;opacity:.35}
+.lxr.aucun .type{color:#FF6B6B;animation:lx-glitch .5s steps(2) infinite}
+
 .calme *{animation:none!important}.calme .etat{max-width:100%}.calme .carte,.calme .notif{opacity:1}
 </style>
 </head>
@@ -126,7 +151,7 @@ button{font-family:inherit}
 
 <script>
 const V = window.Verrou || {
-  deverrouiller(){ console.log('unlock'); }, lampe(on){ return on; }, camera(){}, battery:()=>78, vibrate(){}, calme:()=>false,
+  deverrouiller(){ console.log('unlock'); }, lampe(on){ return on; }, camera(){}, battery:()=>78, batterieInfo:()=>'{"niveau":15,"charge":false}', reseau:()=>'{"type":"cell","force":2}', vibrate(){}, calme:()=>false,
   evenement:()=>'null',
   agenda:()=>JSON.stringify([{titre:'Souper en famille',debut:Date.now()+3*3600e3,jour:false},{titre:'Réunion ti-lex',debut:Date.now()+26*3600e3,jour:false}]),
   notifications:()=>JSON.stringify([{app:'Messages',titre:'Marie-Ève',texte:'On se voit ce soir?',t:Date.now()-60e3},{app:'GitHub',titre:'APK Lanceur LexOS PRO',texte:'Compilation réussie',t:Date.now()-900e3},{app:'Termux',titre:'lexos-update',texte:'[ OK ] terminé',t:Date.now()-3600e3}])
@@ -155,7 +180,22 @@ const JOURS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],
 function tic(tout){
   const d=new Date(); afficherHeure(String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'), tout===true);
   $('#date').innerHTML='$ date → <span>'+JOURS[d.getDay()]+' '+d.getDate()+' '+MOIS[d.getMonth()]+'</span>';
-  try { $('#batt').textContent='⚡ '+V.battery()+' %'; } catch(e){}
+  try { const x=lxIndicateurs(V), h=x.res+'&nbsp;&nbsp;'+x.bat; if($('#batt').dataset.h!==h){ $('#batt').innerHTML=h; $('#batt').dataset.h=h; } } catch(e){}
+}
+
+
+/* ===== indicateurs LexOS : batterie + réseau ===== */
+function lxIndicateurs(P){
+  let b={niveau:0,charge:false}, r={type:'aucun',force:0};
+  try { b=JSON.parse(P.batterieInfo()); } catch(e){ try { b.niveau=P.battery(); } catch(_){} }
+  try { r=JSON.parse(P.reseau()); } catch(e){}
+  const n=Math.round(b.niveau/10), cl='lxb'+(b.charge?' charge':'')+(b.niveau<=20&&!b.charge?' faible':'');
+  let segs=''; for(let i=0;i<10;i++) segs+='<i class="seg'+(i<n?' on':'')+'" style="animation-delay:'+(i*0.12).toFixed(2)+'s"></i>';
+  const bat='<span class="'+cl+'"><span class="lxcorps">'+segs+'</span><span class="pct">'+b.niveau+'%</span><span class="eclair">⚡</span></span>';
+  let bar=''; for(let i=0;i<4;i++) bar+='<i class="'+(i<r.force?'on':'')+'" style="height:'+(4+i*3)+'px;animation-delay:'+(i*0.15).toFixed(2)+'s"></i>';
+  const nom={wifi:'wifi',cell:'mobile',autre:'réseau',aucun:'hors ligne'}[r.type]||r.type;
+  const res='<span class="lxr'+(r.type==='aucun'?' aucun':'')+'"><span class="barres">'+bar+'</span><span class="type">'+nom+'</span></span>';
+  return {bat, res};
 }
 
 /* ===== cartes : météo + agenda, en escalier à 45° ===== */
