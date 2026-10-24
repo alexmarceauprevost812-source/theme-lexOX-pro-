@@ -96,6 +96,7 @@ class ClavierService : InputMethodService() {
     }
 
     private val EQUIVALENTS = mapOf(
+        "a01-gamer" to "🎮",
         "c01-capuche-pouce" to "👍",
         "c02-capuche-triste" to "😢",
         "c03-capuche-rire" to "😆",
