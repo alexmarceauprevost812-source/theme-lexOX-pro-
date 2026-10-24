@@ -33,9 +33,9 @@ class ClavierView(ctx: Context) : View(ctx) {
     private val LIGNE = Color.rgb(0x2A, 0x2A, 0x2A)
     private val BLANC = Color.rgb(0xED, 0xED, 0xED)
     private val GRIS = Color.rgb(0x9A, 0x9A, 0x9A)
-    private val ORANGE = Color.rgb(0xE8, 0x59, 0x0C)
-    private val BOUTON = Color.rgb(0xC8, 0x4B, 0x0A)
-    private val NEON = Color.rgb(0xFF, 0x7A, 0x1A)   // lettres : orange néon gamer LexOS
+    private var ORANGE = Color.rgb(0xE8, 0x59, 0x0C)
+    private var BOUTON = Color.rgb(0xC8, 0x4B, 0x0A)
+    private var NEON = Color.rgb(0xFF, 0x7A, 0x1A)   // lettres : orange néon gamer LexOS
     private val LIME = Color.rgb(0xA6, 0xFF, 0x00)   // chiffres : vert lime
     private val OR = Color.rgb(0xFF, 0xC5, 0x3D)     // symboles : jaune or
 
@@ -98,9 +98,16 @@ class ClavierView(ctx: Context) : View(ctx) {
     )
     private val CHIFFRES = "qwertyuiop"
 
-    init { construire() }
+    init { lireCouleur(); construire() }
+
+    private fun lireCouleur() {
+        val pr = context.getSharedPreferences("lexos", Context.MODE_PRIVATE)
+        if (pr.contains("accent")) { NEON = pr.getInt("accent", NEON); ORANGE = NEON }
+        if (pr.contains("bouton")) BOUTON = pr.getInt("bouton", BOUTON)
+    }
 
     fun preparer(chiffres: Boolean) {
+        lireCouleur()
         mode = if (chiffres) 1 else 0
         maj = 0; ctrl = false
         construire(); requestLayout(); invalidate()
@@ -306,7 +313,7 @@ class ClavierView(ctx: Context) : View(ctx) {
                 c.drawText((CHIFFRES.indexOf(t.label) + 1).mod(10).toString(), r2.right - rond * 0.55f, r2.top + dp(12f), pTexte)
             }
             if (t.code == ESPACE) {   // trait orange qui respire
-                pFond.color = Color.argb(140 + (if (curseur) 80 else 0), 0xE8, 0x59, 0x0C)
+                pFond.color = Color.argb(140 + (if (curseur) 80 else 0), Color.red(ORANGE), Color.green(ORANGE), Color.blue(ORANGE))
                 c.drawRoundRect(r2.centerX() - dp(26f), r2.bottom - dp(7f), r2.centerX() + dp(26f), r2.bottom - dp(5f), dp(1f), dp(1f), pFond)
             }
         }

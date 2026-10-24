@@ -8,7 +8,7 @@
 @font-face{font-family:Orbitron;src:url(polices/orbitron-latin-700-normal.woff2) format('woff2');font-weight:700}
 @font-face{font-family:'JetBrains Mono';src:url(polices/jetbrains-mono-latin-400-normal.woff2) format('woff2');font-weight:400}
 @font-face{font-family:'JetBrains Mono';src:url(polices/jetbrains-mono-latin-700-normal.woff2) format('woff2');font-weight:700}
-:root{--orange:#E8590C;--bouton:#C84B0A;--gris:#9A9A9A;--blanc:#EDEDED;--ligne:#2A2A2A;--haut:max(env(safe-area-inset-top),36px);--bas:max(env(safe-area-inset-bottom),18px)}
+:root{--orange:var(--acc);--bouton:var(--btn);--gris:#9A9A9A;--blanc:#EDEDED;--ligne:#2A2A2A;--haut:max(env(safe-area-inset-top),36px);--bas:max(env(safe-area-inset-bottom),18px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:#000;color:var(--blanc);font-family:'JetBrains Mono',monospace;overflow:hidden;user-select:none;-webkit-user-select:none}
 button{font-family:inherit}
@@ -18,10 +18,10 @@ button{font-family:inherit}
 @keyframes scan{from{transform:translateY(-120px)}to{transform:translateY(110vh)}}
 @keyframes flicker{0%,91%,100%{opacity:1}92%{opacity:.6}93%{opacity:1}96%{opacity:.85}}
 @keyframes respire{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,89,12,.6)}100%{box-shadow:0 0 0 24px rgba(232,89,12,0)}}
-@keyframes clockglow{0%,100%{text-shadow:0 0 8px rgba(232,89,12,.35)}50%{text-shadow:0 0 24px rgba(232,89,12,.8)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(var(--acc-rgb),.6)}100%{box-shadow:0 0 0 24px rgba(var(--acc-rgb),0)}}
+@keyframes clockglow{0%,100%{text-shadow:0 0 8px rgba(var(--acc-rgb),.35)}50%{text-shadow:0 0 24px rgba(var(--acc-rgb),.8)}}
 @keyframes hanflick{0%{opacity:.25;transform:scale(1.25) translateY(-6%)}100%{opacity:1;transform:none}}
-@keyframes tombe{0%{transform:translateY(-85%) scaleY(1.15);opacity:0;color:#A6FF00;text-shadow:0 0 18px #A6FF00}45%{opacity:1;color:#D8FF9A}100%{transform:none;opacity:1;color:#fff;text-shadow:0 0 8px rgba(232,89,12,.3)}}
+@keyframes tombe{0%{transform:translateY(-85%) scaleY(1.15);opacity:0;color:#A6FF00;text-shadow:0 0 18px #A6FF00}45%{opacity:1;color:#D8FF9A}100%{transform:none;opacity:1;color:#fff;text-shadow:0 0 8px rgba(var(--acc-rgb),.3)}}
 @keyframes fleche{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-8px);opacity:1}}
 @keyframes eclair{0%{opacity:0}25%{opacity:.85}100%{opacity:0}}
 /* cartes en diagonale : elles glissent le long de la diagonale à 45° */
@@ -35,7 +35,7 @@ button{font-family:inherit}
 #art.perso{top:0;height:100%;object-fit:cover;animation:none}
 #ombre{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.15) 42%,rgba(0,0,0,.2) 58%,rgba(0,0,0,.8) 100%)}
 #lignes{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px)}
-#balai{position:absolute;left:0;right:0;top:0;height:90px;pointer-events:none;background:linear-gradient(180deg,rgba(232,89,12,0),rgba(232,89,12,.1),rgba(232,89,12,0));animation:scan 5s linear infinite}
+#balai{position:absolute;left:0;right:0;top:0;height:90px;pointer-events:none;background:linear-gradient(180deg,rgba(var(--acc-rgb),0),rgba(var(--acc-rgb),.1),rgba(var(--acc-rgb),0));animation:scan 5s linear infinite}
 
 /* ---------- heure en haut à gauche ---------- */
 .haut{position:absolute;left:0;right:0;top:0;padding:calc(var(--haut) + 2px) 18px 0;display:flex;flex-direction:column;align-items:flex-start}
@@ -73,7 +73,7 @@ button{font-family:inherit}
 .notif .t div:nth-child(3){font-size:11px;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .commandes{display:flex;align-items:center;justify-content:space-between;padding:0 14px}
 .rond{width:54px;height:54px;border-radius:16px;border:1px solid var(--ligne);background:rgba(13,13,13,.9);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .2s,box-shadow .2s}
-.rond.on{background:var(--bouton);box-shadow:0 0 18px rgba(232,89,12,.6)}
+.rond.on{background:var(--bouton);box-shadow:0 0 18px rgba(var(--acc-rgb),.6)}
 .centre{display:flex;flex-direction:column;align-items:center;gap:6px}
 #empreinte{width:64px;height:64px;border-radius:32px;border:2px solid var(--orange);background:#000;display:flex;align-items:center;justify-content:center;animation:pulse 1.8s ease-out infinite;cursor:pointer}
 .centre span{font-size:10.5px;color:var(--gris)}
@@ -82,17 +82,16 @@ button{font-family:inherit}
 .fleches svg:nth-child(2){animation-delay:.15s}
 #eclair{position:fixed;inset:0;background:var(--orange);opacity:0;pointer-events:none}
 #eclair.on{animation:eclair .5s ease-out}
-
 /* ===== indicateurs LexOS : batterie + réseau ===== */
 @keyframes lx-vague{0%,100%{background:#262626;box-shadow:none}50%{background:#A6FF00;box-shadow:0 0 6px #A6FF00}}
 @keyframes lx-eclair{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}
 @keyframes lx-onde{0%,62%,100%{filter:none}72%{filter:brightness(2.2)}}
 @keyframes lx-glitch{0%,100%{transform:none}20%{transform:translateX(-1px)}40%{transform:translateX(1px)}60%{opacity:.6}}
 .lxb{display:inline-flex;align-items:center;gap:6px;vertical-align:middle}
-.lxb .lxcorps{position:relative;display:inline-flex;gap:2px;padding:2px;margin-right:4px;border:1.5px solid #E8590C;border-radius:4px;box-shadow:0 0 6px rgba(232,89,12,.45)}
-.lxb .lxcorps::after{content:'';position:absolute;right:-5px;top:3.5px;width:3px;height:6px;border-radius:0 2px 2px 0;background:#E8590C}
+.lxb .lxcorps{position:relative;display:inline-flex;gap:2px;padding:2px;margin-right:4px;border:1.5px solid var(--acc);border-radius:4px;box-shadow:0 0 6px rgba(var(--acc-rgb),.45)}
+.lxb .lxcorps::after{content:'';position:absolute;right:-5px;top:3.5px;width:3px;height:6px;border-radius:0 2px 2px 0;background:var(--acc)}
 .lxb .seg{width:4px;height:9px;border-radius:1px;background:#262626}
-.lxb .seg.on{background:#E8590C;box-shadow:0 0 5px #E8590C}
+.lxb .seg.on{background:var(--acc);box-shadow:0 0 5px var(--acc)}
 .lxb.faible .lxcorps{border-color:#FF3B30;box-shadow:0 0 8px rgba(255,59,48,.6)}
 .lxb.faible .seg.on{background:#FF3B30;box-shadow:0 0 6px #FF3B30;animation:blink 1s steps(1) infinite}
 .lxb.charge .seg:not(.on){animation:lx-vague 1.6s ease-in-out infinite}
@@ -102,13 +101,39 @@ button{font-family:inherit}
 .lxr{display:inline-flex;align-items:center;gap:6px;vertical-align:middle}
 .lxr .barres{display:inline-flex;align-items:flex-end;gap:2px;height:13px}
 .lxr .barres i{width:3px;border-radius:1px;background:#2A2A2A}
-.lxr .barres i.on{background:#E8590C;box-shadow:0 0 5px #E8590C;animation:lx-onde 2.4s ease-in-out infinite}
+.lxr .barres i.on{background:var(--acc);box-shadow:0 0 5px var(--acc);animation:lx-onde 2.4s ease-in-out infinite}
 .lxr .type{font-weight:700;color:#EDEDED}
 .lxr.aucun .barres i{background:#FF3B30;opacity:.35}
 .lxr.aucun .type{color:#FF6B6B;animation:lx-glitch .5s steps(2) infinite}
 
 .calme *{animation:none!important}.calme .etat{max-width:100%}.calme .carte,.calme .notif{opacity:1}
+
+/* ===== couleur principale (changeable dans le menu) ===== */
+:root{--acc:#E8590C;--acc-rgb:232,89,12;--acc2:#FF8A4C;--btn:#C84B0A;--filtre:none}
+[stroke="#FFC53D"]{stroke:var(--acc)}[fill="#FFC53D"]{fill:var(--acc)}
+img.lex,#splash .logo img{filter:var(--filtre)}
 </style>
+<script>
+/* couleur principale : appliquée avant tout le reste */
+const COULEURS={
+  orange:{n:'orange',acc:'#E8590C',rgb:'232,89,12',acc2:'#FF8A4C',btn:'#C84B0A',h:22},
+  or:{n:'or',acc:'#FFC53D',rgb:'255,197,61',acc2:'#FFD866',btn:'#8A6A00',h:44},
+  lime:{n:'lime',acc:'#A6FF00',rgb:'166,255,0',acc2:'#C9FF66',btn:'#3F6300',h:81},
+  rouge:{n:'rouge',acc:'#FF3B30',rgb:'255,59,48',acc2:'#FF7A72',btn:'#B3261E',h:3},
+  cyan:{n:'cyan',acc:'#22D3EE',rgb:'34,211,238',acc2:'#7DE8F7',btn:'#0E7490',h:188},
+  violet:{n:'violet',acc:'#B46BFF',rgb:'180,107,255',acc2:'#D0A5FF',btn:'#6D28D9',h:270},
+  rose:{n:'rose',acc:'#FF2BD6',rgb:'255,43,214',acc2:'#FF7FE6',btn:'#A21CAF',h:312},
+  blanc:{n:'blanc',acc:'#EDEDED',rgb:'237,237,237',acc2:'#FFFFFF',btn:'#555555',h:null}
+};
+function appliquerCouleur(nom){
+  const c=COULEURS[nom]||COULEURS.orange, r=document.documentElement.style;
+  r.setProperty('--acc',c.acc); r.setProperty('--acc-rgb',c.rgb); r.setProperty('--acc2',c.acc2); r.setProperty('--btn',c.btn);
+  // les icônes dorées suivent la couleur choisie
+  r.setProperty('--filtre', c.h===null ? 'grayscale(1) brightness(1.15)' : (c.h===22 ? 'none' : 'hue-rotate('+(c.h-22)+'deg)'));
+  window.COULEUR=c;
+}
+try { appliquerCouleur(JSON.parse(localStorage.getItem('lexos.couleur')||'"orange"')); } catch(e){ appliquerCouleur('orange'); }
+</script>
 </head>
 <body>
 <div id="scene">
@@ -128,21 +153,21 @@ button{font-family:inherit}
   <div class="bas">
     <div id="notifs" aria-live="polite"></div>
     <div class="fleches" aria-hidden="true">
-      <svg width="22" height="10" viewBox="0 0 22 10"><path d="M2 8l9-6 9 6" fill="none" stroke="#E8590C" stroke-width="2" stroke-linecap="round"/></svg>
-      <svg width="22" height="10" viewBox="0 0 22 10"><path d="M2 8l9-6 9 6" fill="none" stroke="#E8590C" stroke-width="2" stroke-linecap="round" opacity=".5"/></svg>
+      <svg width="22" height="10" viewBox="0 0 22 10"><path d="M2 8l9-6 9 6" fill="none" stroke="#FFC53D" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg width="22" height="10" viewBox="0 0 22 10"><path d="M2 8l9-6 9 6" fill="none" stroke="#FFC53D" stroke-width="2" stroke-linecap="round" opacity=".5"/></svg>
     </div>
     <div class="commandes">
       <button class="rond" id="lampe" aria-label="Lampe de poche">
-        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10v4l-3 4v11a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V10L7 6z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 13v3" stroke="#E8590C" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10v4l-3 4v11a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V10L7 6z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 13v3" stroke="#FFC53D" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
       <div class="centre">
         <button id="empreinte" aria-label="Déverrouiller">
-          <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#E8590C" stroke-width="1.6" stroke-linecap="round"><path d="M5 9a7.5 7.5 0 0 1 14 0"/><path d="M7.5 20c-1-2-1.5-4-1.5-6a6 6 0 0 1 12 0"/><path d="M10.5 21c-.8-2-1.3-4.2-1.3-7a2.8 2.8 0 0 1 5.6 0c0 1.2.2 2.3.5 3.3"/><path d="M12 14c0 2.5.6 4.7 1.7 6.5"/><path d="M17.8 17.5c.1.9.3 1.8.6 2.5"/></g></svg>
+          <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#FFC53D" stroke-width="1.6" stroke-linecap="round"><path d="M5 9a7.5 7.5 0 0 1 14 0"/><path d="M7.5 20c-1-2-1.5-4-1.5-6a6 6 0 0 1 12 0"/><path d="M10.5 21c-.8-2-1.3-4.2-1.3-7a2.8 2.8 0 0 1 5.6 0c0 1.2.2 2.3.5 3.3"/><path d="M12 14c0 2.5.6 4.7 1.7 6.5"/><path d="M17.8 17.5c.1.9.3 1.8.6 2.5"/></g></svg>
         </button>
         <span>$ unlock — glisse vers le haut</span>
       </div>
       <button class="rond" id="camera" aria-label="Appareil photo">
-        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2.5l1.5-2h6l1.5 2H19a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.6" fill="none" stroke="#E8590C" stroke-width="1.8"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2.5l1.5-2h6l1.5 2H19a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.6" fill="none" stroke="#FFC53D" stroke-width="1.8"/></svg>
       </button>
     </div>
   </div>
@@ -183,7 +208,6 @@ function tic(tout){
   try { const x=lxIndicateurs(V), h=x.res+'&nbsp;&nbsp;'+x.bat; if($('#batt').dataset.h!==h){ $('#batt').innerHTML=h; $('#batt').dataset.h=h; } } catch(e){}
 }
 
-
 /* ===== indicateurs LexOS : batterie + réseau ===== */
 function lxIndicateurs(P){
   let b={niveau:0,charge:false}, r={type:'aucun',force:0};
@@ -200,12 +224,12 @@ function lxIndicateurs(P){
 
 /* ===== cartes : météo + agenda, en escalier à 45° ===== */
 const ICO={
-  soleil:'<svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="#E8590C"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="#EDEDED" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  soleil:'<svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="#FFC53D"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="#EDEDED" stroke-width="1.6" stroke-linecap="round"/></svg>',
   nuage:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 18z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/></svg>',
-  pluie:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 14h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 14z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3" stroke="#E8590C" stroke-width="1.8" stroke-linecap="round"/></svg>',
-  neige:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 13h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 13z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><g fill="#E8590C"><circle cx="8" cy="17.5" r="1.2"/><circle cx="12" cy="19.5" r="1.2"/><circle cx="16" cy="17.5" r="1.2"/></g></svg>',
-  orage:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 13h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 13z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 14l-2 4h3l-2 4" fill="none" stroke="#E8590C" stroke-width="1.8" stroke-linejoin="round"/></svg>',
-  agenda:'<svg width="20" height="20" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="#EDEDED" stroke-width="1.7"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="#E8590C" stroke-width="1.8" stroke-linecap="round"/></svg>'
+  pluie:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 14h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 14z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3" stroke="#FFC53D" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  neige:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 13h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 13z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><g fill="#FFC53D"><circle cx="8" cy="17.5" r="1.2"/><circle cx="12" cy="19.5" r="1.2"/><circle cx="16" cy="17.5" r="1.2"/></g></svg>',
+  orage:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 13h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 13z" fill="none" stroke="#EDEDED" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 14l-2 4h3l-2 4" fill="none" stroke="#FFC53D" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  agenda:'<svg width="20" height="20" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="#EDEDED" stroke-width="1.7"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="#FFC53D" stroke-width="1.8" stroke-linecap="round"/></svg>'
 };
 function meteoTexte(code){
   if (code===0) return ['soleil','dégagé']; if (code<=3) return ['nuage','nuageux']; if (code<=48) return ['nuage','brouillard'];

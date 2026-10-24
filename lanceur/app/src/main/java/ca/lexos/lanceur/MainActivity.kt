@@ -42,6 +42,16 @@ class MainActivity : Activity() {
     private val CODE_APPEL = 7
     private var numeroEnAttente: String? = null
 
+    private val deverrouillage = object : BroadcastReceiver() {
+        override fun onReceive(c: Context?, i: Intent?) {
+            web.post { web.evaluateJavascript("window.lexosDeverrouille && lexosDeverrouille()", null) }
+        }
+    }
+
+    private fun js(code: String) {
+        web.post { web.evaluateJavascript(code, null) }
+    }
+
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context?, i: Intent?) {
             iconCache.clear()
@@ -95,6 +105,7 @@ class MainActivity : Activity() {
         }
         setContentView(web)
 
+        registerReceiver(deverrouillage, IntentFilter(Intent.ACTION_USER_PRESENT))
         registerReceiver(packageReceiver, IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_ADDED)
             addAction(Intent.ACTION_PACKAGE_REMOVED)
@@ -134,6 +145,7 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         try { unregisterReceiver(packageReceiver) } catch (_: Exception) {}
+        try { unregisterReceiver(deverrouillage) } catch (_: Exception) {}
         super.onDestroy()
     }
 
@@ -162,6 +174,12 @@ class MainActivity : Activity() {
         // Un lanceur ne se ferme pas : on referme le tiroir s'il est ouvert.
         web.evaluateJavascript("window.lexosBack && lexosBack()", null)
     }
+
+    private fun ipWifi(): String? = try {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        cm.getLinkProperties(cm.activeNetwork)?.linkAddresses
+            ?.map { it.address }?.firstOrNull { it is java.net.Inet4Address && !it.isLoopbackAddress }?.hostAddress
+    } catch (_: Exception) { null }
 
     inner class Bridge {
 
@@ -332,6 +350,103 @@ class MainActivity : Activity() {
         fun setCalme(on: Boolean) {
             getSharedPreferences("lexos", MODE_PRIVATE).edit().putBoolean("calme", on).apply()
         }
+
+        /** Couleur principale choisie : partagée avec le clavier et les bannières. */
+        @JavascriptInterface
+        fun setAccent(acc: String, bouton: String) {
+            try {
+                getSharedPreferences("lexos", MODE_PRIVATE).edit()
+                    .putInt("accent", android.graphics.Color.parseColor(acc))
+                    .putInt("bouton", android.graphics.Color.parseColor(bouton)).apply()
+            } catch (_: Exception) {}
+        }
+
+        /** Adresse wifi de ce téléphone (pour partager son IA). */
+        @JavascriptInterface
+        fun monIP(): String = ipWifi() ?: ""
+
+        @JavascriptInterface
+        fun copier(texte: String) {
+            runOnUiThread {
+                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("LexOS", texte))
+            }
+        }
+
+        /** Cherche toutes les IA locales (Ollama, port 11434) : ce téléphone + tout le réseau wifi. */
+        @JavascriptInterface
+        fun iaScanner() {
+            Thread {
+                val cibles = mutableListOf("127.0.0.1")
+                val ip = ipWifi()
+                if (ip != null) {
+                    val base = ip.substringBeforeLast('.')
+                    for (n in 1..254) { val h = "$base.$n"; if (h != ip) cibles.add(h) }
+                }
+                val pool = java.util.concurrent.Executors.newFixedThreadPool(48)
+                for (h in cibles) pool.execute {
+                    try {
+                        java.net.Socket().use { it.connect(java.net.InetSocketAddress(h, 11434), 450) }
+                        val c = java.net.URL("http://$h:11434/api/tags").openConnection() as java.net.HttpURLConnection
+                        c.connectTimeout = 1500; c.readTimeout = 3000
+                        val liste = JSONObject(c.inputStream.bufferedReader().readText()).optJSONArray("models") ?: org.json.JSONArray()
+                        val modeles = org.json.JSONArray()
+                        for (i in 0 until liste.length()) modeles.put(liste.getJSONObject(i).optString("name"))
+                        val nom = if (h == "127.0.0.1") "ce téléphone" else try { java.net.InetAddress.getByName(h).canonicalHostName.takeIf { it != h } ?: h } catch (_: Exception) { h }
+                        val o = JSONObject().put("url", "http://$h:11434").put("nom", nom).put("modeles", modeles)
+                        js("lexosIA.trouve(" + o.toString() + ")")
+                    } catch (_: Exception) {}
+                }
+                pool.shutdown()
+                pool.awaitTermination(30, java.util.concurrent.TimeUnit.SECONDS)
+                js("lexosIA.scanFin(" + JSONObject.quote(ip ?: "") + ")")
+            }.start()
+        }
+
+        /** IA locale : parle à Ollama (Termux sur le téléphone, ou l'ordi sur le wifi) en continu. */
+        @JavascriptInterface
+        fun iaDemander(url: String, modele: String, messages: String) {
+            Thread {
+                try {
+                    val base = url.trimEnd('/')
+                    var m = modele
+                    if (m.isEmpty()) {
+                        val t = java.net.URL("$base/api/tags").openConnection() as java.net.HttpURLConnection
+                        t.connectTimeout = 4000; t.readTimeout = 8000
+                        val liste = JSONObject(t.inputStream.bufferedReader().readText()).optJSONArray("models")
+                        if (liste == null || liste.length() == 0) {
+                            js("lexosIA.erreur(" + JSONObject.quote("Ollama répond, mais aucun modèle n'est installé.") + ")"); return@Thread
+                        }
+                        m = liste.getJSONObject(0).getString("name")
+                    }
+                    js("lexosIA.modele(" + JSONObject.quote(m) + ")")
+                    val c = java.net.URL("$base/api/chat").openConnection() as java.net.HttpURLConnection
+                    c.requestMethod = "POST"; c.doOutput = true
+                    c.connectTimeout = 4000; c.readTimeout = 180000
+                    c.setRequestProperty("Content-Type", "application/json")
+                    val corps = JSONObject().put("model", m).put("messages", org.json.JSONArray(messages)).put("stream", true)
+                    c.outputStream.use { it.write(corps.toString().toByteArray()) }
+                    if (c.responseCode !in 200..299) {
+                        val err = c.errorStream?.bufferedReader()?.readText() ?: ""
+                        js("lexosIA.erreur(" + JSONObject.quote("Ollama : " + c.responseCode + " " + err.take(160)) + ")"); return@Thread
+                    }
+                    c.inputStream.bufferedReader().useLines { lignes ->
+                        for (l in lignes) {
+                            if (l.isBlank()) continue
+                            val o = JSONObject(l)
+                            if (o.has("error")) { js("lexosIA.erreur(" + JSONObject.quote(o.optString("error")) + ")"); return@useLines }
+                            val morceau = o.optJSONObject("message")?.optString("content") ?: ""
+                            if (morceau.isNotEmpty()) js("lexosIA.morceau(" + JSONObject.quote(morceau) + ")")
+                            if (o.optBoolean("done")) break
+                        }
+                    }
+                    js("lexosIA.fin()")
+                } catch (e: Exception) {
+                    js("lexosIA.erreur(" + JSONObject.quote("Ollama ne répond pas à $url (" + e.javaClass.simpleName + ").") + ")")
+                }
+            }.start()
+        }
+
 
         @JavascriptInterface
         fun batterieInfo(): String = EtatSysteme.batterie(this@MainActivity)

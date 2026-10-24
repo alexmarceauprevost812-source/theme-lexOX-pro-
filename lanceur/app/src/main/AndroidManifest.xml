@@ -24,7 +24,8 @@
         android:label="LexOS PRO"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/LexOS"
-        android:hardwareAccelerated="true">
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"

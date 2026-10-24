@@ -26,7 +26,7 @@ import android.widget.TextView
  * qui apparaissent ligne par ligne, avec un scintillement de vieil écran.
  */
 object Banniere {
-    private val ORANGE = Color.rgb(255, 140, 0)
+    private var ORANGE = Color.rgb(255, 140, 0)
     private val VERT = Color.rgb(57, 255, 136)
     private val GRIS = Color.rgb(154, 154, 154)
     private val SPIN = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
@@ -57,6 +57,7 @@ object Banniere {
 
     private fun afficher(ctx: Context, type: String, nom: String, pkg: String?) {
         retirer(ctx)
+        ORANGE = ctx.getSharedPreferences("lexos", Context.MODE_PRIVATE).getInt("accent", Color.rgb(255, 140, 0))
         val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val largeur = ctx.resources.displayMetrics.widthPixels - dp(ctx, 24f)
         val mono = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
