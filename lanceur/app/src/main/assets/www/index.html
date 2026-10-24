@@ -263,6 +263,8 @@ const ecrire = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 let APPS = [], filtre = 'tout', cible = null;
 let favoris = lire('lexos.favoris', null);
 let calme = lire('lexos.calme', false);
+// S25 Ultra et autres grands écrans : une 3e rangée d'applis épinglées.
+const NB_FAV = window.innerHeight >= 870 ? 12 : 8;
 
 const $ = (s) => document.querySelector(s);
 function toast(t){ const e=$('#toast'); e.innerHTML=t; e.classList.add('on'); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove('on'),1600); }
@@ -326,11 +328,11 @@ function rendreAccueil(){
   if (!favoris){
     const prefs=['com.termux','com.anthropic.claude','com.offsec.nethunter','com.sec.android.gallery3d','com.sec.android.app.myfiles','com.google.android.apps.youtube.music','com.samsung.android.app.notes','com.android.settings'];
     favoris=prefs.filter(p=>parPkg[p]);
-    APPS.filter(a=>iconeLexos(a)&&!favoris.includes(a.pkg)).forEach(a=>{ if(favoris.length<8) favoris.push(a.pkg); });
-    APPS.forEach(a=>{ if(favoris.length<8&&!favoris.includes(a.pkg)) favoris.push(a.pkg); });
+    APPS.filter(a=>iconeLexos(a)&&!favoris.includes(a.pkg)).forEach(a=>{ if(favoris.length<NB_FAV) favoris.push(a.pkg); });
+    APPS.forEach(a=>{ if(favoris.length<NB_FAV&&!favoris.includes(a.pkg)) favoris.push(a.pkg); });
   }
   const g=$('#favoris'); g.innerHTML='';
-  favoris.map(p=>parPkg[p]).filter(Boolean).slice(0,8).forEach((a,i)=>g.appendChild(tuile(a,i,.6)));
+  favoris.map(p=>parPkg[p]).filter(Boolean).slice(0,NB_FAV).forEach((a,i)=>g.appendChild(tuile(a,i,.6)));
   const d=$('#dock'); d.innerHTML='';
   DOCK_PKGS.map(opts=>opts.map(p=>parPkg[p]).find(Boolean)).filter(Boolean).forEach((a,i)=>d.appendChild(tuile(a,i,.9)));
   $('#nbapps').textContent=APPS.length;
@@ -367,7 +369,7 @@ function fermerMenu(){ $('#menu').classList.remove('ouvert'); $('#voile').classL
 $('#voile').onclick=fermerMenu;
 $('#mFav').onclick=()=>{ if(!cible) return;
   if (favoris.includes(cible.pkg)) favoris=favoris.filter(p=>p!==cible.pkg);
-  else { favoris.push(cible.pkg); if(favoris.length>8) favoris.shift(); }
+  else { favoris.push(cible.pkg); if(favoris.length>NB_FAV) favoris.shift(); }
   ecrire('lexos.favoris',favoris); rendreAccueil(); fermerMenu(); toast('<span style="color:#E8590C">[ OK ]</span> accueil mis à jour'); };
 $('#mInfo').onclick=()=>{ if(cible) B.appInfo(cible.pkg); fermerMenu(); };
 $('#mFond').onclick=()=>{ B.openWallpaper(); fermerMenu(); };
