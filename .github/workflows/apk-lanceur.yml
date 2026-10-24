@@ -33,8 +33,28 @@ jobs:
         with:
           gradle-version: '8.7'
 
+      # Clé de signature d'Alex Marceau Prevost (Settings → Secrets → Actions).
+      - name: Clé de signature
+        env:
+          B64: ${{ secrets.LEXOS_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$B64" ]; then
+            echo "$B64" | base64 -d > "$RUNNER_TEMP/lexos.jks"
+            echo "LEXOS_KEYSTORE_PATH=$RUNNER_TEMP/lexos.jks" >> "$GITHUB_ENV"
+            echo "Signature : clé d'Alex Marceau Prevost"
+          else
+            echo "Signature : ancienne clé (ajoute les secrets LEXOS_KEYSTORE_B64 et LEXOS_KEYSTORE_PASS)"
+          fi
+
       - name: Compiler l'APK
+        env:
+          LEXOS_KEYSTORE_PASS: ${{ secrets.LEXOS_KEYSTORE_PASS }}
         run: gradle assembleRelease --no-daemon
+
+      - name: Vérifier la signature
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          $APKSIGNER verify --print-certs app/build/outputs/apk/release/app-release.apk | grep -i "certificate DN" || true
 
       - name: Renommer
         run: cp app/build/outputs/apk/release/app-release.apk LexOS-PRO-Lanceur.apk

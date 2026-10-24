@@ -15,16 +15,19 @@ android {
         versionName = "1.4"
     }
 
-    // Clé de signature : fournie par GitHub (secret LEXOS_KEYSTORE) pour que
-    // chaque nouvelle version s'installe par-dessus l'ancienne.
+    // Clé de signature d'Alex Marceau Prevost : fournie par les Secrets GitHub
+    // (LEXOS_KEYSTORE_B64 + LEXOS_KEYSTORE_PASS), jamais dans le dépôt public.
+    // Sans secret, l'ancienne clé lexos.jks est utilisée.
     signingConfigs {
         create("lexos") {
-            val ks = file(System.getenv("LEXOS_KEYSTORE_PATH") ?: "lexos.jks")
+            val chemin = System.getenv("LEXOS_KEYSTORE_PATH")?.takeIf { it.isNotEmpty() }
+            val mdp = System.getenv("LEXOS_KEYSTORE_PASS")?.takeIf { it.isNotEmpty() && chemin != null } ?: "lexospro"
+            val ks = file(chemin ?: "lexos.jks")
             if (ks.exists()) {
                 storeFile = ks
-                storePassword = System.getenv("LEXOS_KEYSTORE_PASS") ?: "lexospro"
-                keyAlias = System.getenv("LEXOS_KEY_ALIAS") ?: "lexos"
-                keyPassword = System.getenv("LEXOS_KEYSTORE_PASS") ?: "lexospro"
+                storePassword = mdp
+                keyAlias = "lexos"
+                keyPassword = mdp
             }
         }
     }
