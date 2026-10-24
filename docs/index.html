@@ -110,6 +110,48 @@ details p{color:var(--gris);font-size:14px;margin:10px 0 0;max-width:760px}
 .achat ul{list-style:none;padding:0;margin:18px 0 24px;text-align:left;display:inline-block}
 .achat ul li::before{content:'[ OK ] ';color:var(--orange);font-weight:700}
 
+/* écran du téléphone qui fait défiler les captures */
+.telephone{position:relative;overflow:hidden}
+.diapo{position:relative;aspect-ratio:768/1664;border-radius:32px;overflow:hidden}
+.diapo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.04);transition:opacity .9s ease,transform 3.5s ease}
+.diapo img.on{opacity:1;transform:none}
+
+/* bandeau d'images qui défile tout seul */
+.bandeau{position:relative;z-index:2;overflow:hidden;padding:26px 0;border-top:1px solid #1A1A1A;border-bottom:1px solid #1A1A1A;background:#050505}
+.piste{display:flex;gap:16px;width:max-content;animation:defile 60s linear infinite}
+.bandeau:hover .piste{animation-play-state:paused}
+.piste img{height:260px;width:auto;border-radius:20px;box-shadow:0 0 0 1px var(--ligne)}
+@keyframes defile{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* vedette : SMS + clavier */
+.vedette{display:flex;flex-wrap:wrap;gap:28px;align-items:center}
+.vedette .tels{flex:1 1 420px;display:flex;gap:18px;justify-content:center;align-items:flex-end}
+.vedette .tels img{width:48%;max-width:250px;border-radius:26px;box-shadow:0 0 0 1px var(--ligne),0 20px 60px rgba(255,122,26,.18)}
+.vedette .tels img:nth-child(2){transform:translateY(-30px)}
+.vedette .txt{flex:1 1 320px}
+.vedette .txt li{margin:8px 0;color:var(--gris)}
+.vedette .txt li b{color:var(--blanc)}
+
+/* galerie */
+.galerie{columns:4 220px;column-gap:14px}
+.galerie button{display:block;width:100%;margin:0 0 14px;padding:0;border:0;background:none;cursor:zoom-in;break-inside:avoid;border-radius:18px;overflow:hidden;box-shadow:0 0 0 1px var(--ligne);transition:transform .25s,box-shadow .25s}
+.galerie button:hover{transform:translateY(-4px);box-shadow:0 0 0 1px var(--orange),0 14px 34px rgba(232,89,12,.25)}
+.galerie img{width:100%}
+#visio{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+#visio.on{display:flex;animation:up .3s ease-out}
+#visio img{max-height:92vh;max-width:92vw;border-radius:20px;box-shadow:0 0 0 1px var(--orange),0 0 60px rgba(232,89,12,.35)}
+
+/* bouton d'achat animé : reflet qui passe, bordure qui tourne, flèche qui bouge */
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.btn.gros{position:relative;overflow:hidden;isolation:isolate}
+.btn.gros::before{content:'';position:absolute;inset:-2px;border-radius:16px;padding:2px;background:conic-gradient(from var(--a),#FFC53D,#E8590C,#A6FF00,#E8590C,#FFC53D);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:tourne 3s linear infinite;z-index:-1}
+.btn.gros::after{content:'';position:absolute;top:0;bottom:0;width:60px;left:-80px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:reflet 2.6s ease-in-out infinite}
+.btn.gros .fl{display:inline-block;animation:fleche 1.2s ease-in-out infinite}
+@keyframes tourne{to{--a:360deg}}
+@keyframes reflet{0%,40%{left:-80px}100%{left:110%}}
+@keyframes fleche{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+.btn.gros:hover{transform:translateY(-2px) scale(1.03)}
+.btn.gros{transition:transform .2s}
 footer{position:relative;z-index:2;border-top:1px solid #1A1A1A;padding:28px 0;font-size:12px;color:var(--gris)}
 footer .conteneur{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
 .fleurdelys{color:#4D8DFF}
@@ -137,16 +179,64 @@ footer .conteneur{display:flex;flex-wrap:wrap;justify-content:space-between;gap:
       <h1>Ton téléphone,<br><span>en terminal.</span></h1>
       <p class="sous">LexOS PRO transforme ton Android en <b>terminal noir et orange néon</b>&nbsp;: un lanceur animé, un écran de verrouillage, un clavier néon, un composeur et des noms animés pour tes SMS et tes appels.</p>
       <div class="actions">
-        <a class="btn gros" href="https://buy.stripe.com/6oU4gzdfU0j7eXo8IC53O0r">$ acheter LexOS PRO — 5,20 $</a>
+        <a class="btn gros" href="https://buy.stripe.com/6oU4gzdfU0j7eXo8IC53O0r">$ acheter LexOS PRO — 5,20 $ <span class="fl">→</span></a>
         <a class="btn contour" href="#captures">Voir les écrans</a>
       </div>
       <div class="petit">5,20 $ une seule fois · paiement sécurisé par Stripe · Android 8 et plus · Produit du Québec <span class="fleurdelys">⚜</span></div>
     </div>
     <div class="visuel">
-      <div class="telephone"><img src="captures/2-accueil.jpg" alt="Écran d'accueil LexOS PRO : heure, widget terminal neofetch avec la mascotte, applis et dock"></div>
+      <div class="telephone"><div class="diapo" id="diapo">
+        <img class="on" src="captures/2-accueil.jpg" alt="Écran d'accueil LexOS PRO">
+        <img src="captures/1-verrouillage.jpg" alt="Écran de verrouillage LexOS PRO">
+        <img src="captures/15-clavier-lettres.jpg" alt="SMS avec le clavier néon LexOS PRO">
+        <img src="captures/6-sms-anime.jpg" alt="Nom du contact animé à la réception d'un SMS">
+        <img src="captures/3-pages.jpg" alt="Pages d'applications horizontales">
+        <img src="captures/7-composeur.jpg" alt="Composeur LexOS">
+        <img src="captures/17-verrou-photo.jpg" alt="Verrouillage avec une photo perso">
+      </div></div>
     </div>
   </div>
 </header>
+
+<div class="bandeau" aria-hidden="true"><div class="piste"><img src="captures/2-accueil.jpg" alt="" loading="lazy"><img src="captures/1-verrouillage.jpg" alt="" loading="lazy"><img src="captures/15-clavier-lettres.jpg" alt="" loading="lazy"><img src="captures/6-sms-anime.jpg" alt="" loading="lazy"><img src="captures/3-pages.jpg" alt="" loading="lazy"><img src="captures/11-appel-v4.jpg" alt="" loading="lazy"><img src="captures/16-clavier-symboles.jpg" alt="" loading="lazy"><img src="captures/4-panneau.jpg" alt="" loading="lazy"><img src="captures/7-composeur.jpg" alt="" loading="lazy"><img src="captures/5-titre-anime.jpg" alt="" loading="lazy"><img src="captures/12-tiroir.jpg" alt="" loading="lazy"><img src="captures/17-verrou-photo.jpg" alt="" loading="lazy"><img src="captures/10-samsung.jpg" alt="" loading="lazy"><img src="captures/14-menu.jpg" alt="" loading="lazy"><img src="captures/2-accueil.jpg" alt="" loading="lazy"><img src="captures/1-verrouillage.jpg" alt="" loading="lazy"><img src="captures/15-clavier-lettres.jpg" alt="" loading="lazy"><img src="captures/6-sms-anime.jpg" alt="" loading="lazy"><img src="captures/3-pages.jpg" alt="" loading="lazy"><img src="captures/11-appel-v4.jpg" alt="" loading="lazy"><img src="captures/16-clavier-symboles.jpg" alt="" loading="lazy"><img src="captures/4-panneau.jpg" alt="" loading="lazy"><img src="captures/7-composeur.jpg" alt="" loading="lazy"><img src="captures/5-titre-anime.jpg" alt="" loading="lazy"><img src="captures/12-tiroir.jpg" alt="" loading="lazy"><img src="captures/17-verrou-photo.jpg" alt="" loading="lazy"><img src="captures/10-samsung.jpg" alt="" loading="lazy"><img src="captures/14-menu.jpg" alt="" loading="lazy"></div></div>
+
+<section id="sms-clavier">
+  <div class="conteneur vedette">
+    <div class="tels apparait">
+      <img src="captures/15-clavier-lettres.jpg" alt="Conversation SMS avec le clavier néon : lettres orange" loading="lazy">
+      <img src="captures/6-sms-anime.jpg" alt="Le nom du contact s'anime en grosses lettres quand un SMS arrive" loading="lazy">
+    </div>
+    <div class="txt apparait">
+      <div class="section-invite">$ sms --clavier neon</div>
+      <h2>Tes SMS, en néon</h2>
+      <ul>
+        <li><b>Un SMS arrive</b> : le nom du contact s'affiche en grosses lettres █, même par-dessus tes applis.</li>
+        <li><b>Tu réponds</b> avec le clavier néon : <span class="lettres"><span class="o">lettres orange</span>, <span class="l">chiffres lime</span>, <span class="g">symboles or</span></span>.</li>
+        <li><b>Rangée terminal</b> : esc, tab, ctrl et les flèches, parfait pour Termux.</li>
+        <li><b>Accents en appui long</b> : é è ê ç à… comme il faut en français.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="clavier">
+  <div class="conteneur vedette" style="flex-direction:row-reverse">
+    <div class="tels apparait">
+      <img src="captures/16-clavier-symboles.jpg" alt="Clavier néon : chiffres vert lime et symboles jaune or" loading="lazy">
+      <img src="captures/15-clavier-lettres.jpg" alt="Clavier néon : lettres orange" loading="lazy">
+    </div>
+    <div class="txt apparait">
+      <div class="section-invite">$ kbd --neon</div>
+      <h2>Le clavier LexOS PRO</h2>
+      <ul>
+        <li><b>Fond noir</b>, chaque touche encerclée, même forme partout.</li>
+        <li><b>Une lueur néon</b> autour de chaque caractère, plus forte quand tu tapes.</li>
+        <li><b>Une bulle</b> au-dessus de la touche pour voir ce que tu tapes.</li>
+        <li><b>Il marche partout</b> : SMS, Messenger, Termux, navigateur…</li>
+      </ul>
+    </div>
+  </div>
+</section>
 
 <section id="captures">
   <div class="conteneur">
@@ -207,6 +297,16 @@ footer .conteneur{display:flex;flex-wrap:wrap;justify-content:space-between;gap:
   </div>
 </section>
 
+<section id="galerie">
+  <div class="conteneur">
+    <div class="section-invite">$ ls ~/galerie</div>
+    <h2>Galerie</h2>
+    <p class="intro">Tous les écrans, les fonds d'écran et le pack d'icônes inclus. Touche une image pour l'agrandir.</p>
+    <div class="galerie"><button type="button" aria-label="Agrandir"><img src="captures/2-accueil.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/15-clavier-lettres.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/1-verrouillage.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/6-sms-anime.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/16-clavier-symboles.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/17-verrou-photo.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/3-pages.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/11-appel-v4.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/4-panneau.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/7-composeur.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/12-tiroir.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/5-titre-anime.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/13-filtre-outils.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/10-samsung.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir"><img src="captures/14-menu.jpg" alt="" loading="lazy"></button><button type="button" aria-label="Agrandir : Fond d'écran verrouillage"><img src="img/fond-verrouillage.jpg" alt="Fond d'écran verrouillage" loading="lazy"></button><button type="button" aria-label="Agrandir : Fond d'écran accueil"><img src="img/fond-accueil.jpg" alt="Fond d'écran accueil" loading="lazy"></button><button type="button" aria-label="Agrandir : Pack d'icônes LexOS"><img src="img/icones.jpg" alt="Pack d'icônes LexOS" loading="lazy"></button><button type="button" aria-label="Agrandir : LexOS 1.0"><img src="img/keyart.jpg" alt="LexOS 1.0" loading="lazy"></button><button type="button" aria-label="Agrandir : Mascotte LexOS"><img src="img/mascotte-rock.jpg" alt="Mascotte LexOS" loading="lazy"></button><button type="button" aria-label="Agrandir : Ti-Lex-Al"><img src="img/tilexal.jpg" alt="Ti-Lex-Al" loading="lazy"></button><button type="button" aria-label="Agrandir : Mascotte LexOS"><img src="img/mascotte-pouce.jpg" alt="Mascotte LexOS" loading="lazy"></button><button type="button" aria-label="Agrandir : Mode hacker"><img src="img/capuche.jpg" alt="Mode hacker" loading="lazy"></button></div>
+  </div>
+</section>
+<div id="visio" role="dialog" aria-label="Image agrandie"><img alt=""></div>
+
 <section>
   <div class="conteneur">
     <div class="section-invite">$ man lexos</div>
@@ -232,7 +332,7 @@ footer .conteneur{display:flex;flex-wrap:wrap;justify-content:space-between;gap:
         <li>Composeur et noms animés</li>
         <li>Mises à jour incluses</li>
       </ul>
-      <div><a class="btn gros" href="https://buy.stripe.com/6oU4gzdfU0j7eXo8IC53O0r">$ acheter LexOS PRO — 5,20 $</a></div>
+      <div><a class="btn gros" href="https://buy.stripe.com/6oU4gzdfU0j7eXo8IC53O0r">$ acheter LexOS PRO — 5,20 $ <span class="fl">→</span></a></div>
       <div class="petit">Paiement sécurisé par Stripe</div>
     </div>
   </div>
@@ -258,6 +358,14 @@ function heure(t,tout){
 }
 function tic(t){ const d=new Date(); heure(String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),t); }
 tic(true); setInterval(()=>tic(false),2000);
+/* diaporama dans le téléphone */
+(function(){ const im=[...document.querySelectorAll('#diapo img')]; let i=0;
+  setInterval(()=>{ im[i].classList.remove('on'); i=(i+1)%im.length; im[i].classList.add('on'); }, 2600); })();
+/* visionneuse de la galerie */
+const visio=document.getElementById('visio');
+document.querySelectorAll('.galerie button').forEach(b=>b.addEventListener('click',()=>{ visio.querySelector('img').src=b.querySelector('img').src; visio.classList.add('on'); }));
+visio.addEventListener('click',()=>visio.classList.remove('on'));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') visio.classList.remove('on'); });
 /* les sections apparaissent quand on défile */
 const obs=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('vu'); obs.unobserve(e.target); } }),{threshold:.15});
 document.querySelectorAll('.apparait').forEach((el,i)=>{ el.style.animationDelay=((i%4)*0.08)+'s'; obs.observe(el); });
