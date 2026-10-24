@@ -12,6 +12,13 @@ widget `neofetch` avec la mascotte, tuiles qui « popent », éclair orange au l
 - **Appui long sur le fond** : changer le fond d'écran, couper les animations, réglages Android.
 - **Icônes LexOS** pour les applis reconnues (Termux, Claude, NetHunter, Caméra, Galerie, Mes fichiers, Paramètres, YT Music, Notes, Chrome, Internet, Quick Share, Dossier sécurisé…). Les autres gardent leur icône dans une tuile noire.
 
+## Nouveautés 1.2
+- **Pages horizontales** : glisse à gauche/droite depuis l'accueil pour voir toutes tes applis en pages (A–Z), avec points orange et effet 3D. Bouton Accueil ou Retour = revenir à la page 1.
+- **Heure animée** : quand un chiffre change, 3 caractères chinois vert lime défilent, puis le chiffre tombe en blanc.
+- **Claude** : titre animé « CLAUDE » plein écran à l'ouverture, nom qui ondule sous la tuile.
+- **ChatGPT** : la vraie icône de l'appli se construit (balayage + anneau vert lime) avant l'ouverture.
+- **Ta photo** : appui long sur le fond (ou toucher la photo du widget) → « changer ma photo du widget » / « changer l'image de fond » / « remettre les images LexOS ».
+
 ## Installer
 1. Onglet **Releases** → `lanceur-lexos-pro` → télécharge `LexOS-PRO-Lanceur.apk` sur le téléphone.
 2. Ouvre-le et autorise « Installer des applis inconnues » pour ton navigateur ou Mes fichiers.

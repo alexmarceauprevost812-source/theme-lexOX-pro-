@@ -17,6 +17,8 @@ import android.util.Base64
 import android.view.View
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.graphics.drawable.toBitmap
@@ -35,6 +37,8 @@ class MainActivity : Activity() {
 
     private lateinit var web: WebView
     private val iconCache = HashMap<String, String>()
+    private var choixFichier: ValueCallback<Array<Uri>>? = null
+    private val CODE_PHOTO = 42
 
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context?, i: Intent?) {
@@ -67,6 +71,23 @@ class MainActivity : Activity() {
                 override fun shouldInterceptRequest(v: WebView, r: android.webkit.WebResourceRequest) =
                     loader.shouldInterceptRequest(r.url)
             }
+            // Permet à l'utilisateur de choisir une photo (widget, fond du lanceur).
+            webChromeClient = object : WebChromeClient() {
+                override fun onShowFileChooser(
+                    v: WebView, cb: ValueCallback<Array<Uri>>, p: FileChooserParams
+                ): Boolean {
+                    choixFichier?.onReceiveValue(null)
+                    choixFichier = cb
+                    return try {
+                        val i = Intent(Intent.ACTION_GET_CONTENT).addCategory(Intent.CATEGORY_OPENABLE).setType("image/*")
+                        startActivityForResult(Intent.createChooser(i, "Choisir une photo"), CODE_PHOTO)
+                        true
+                    } catch (e: Exception) {
+                        choixFichier = null
+                        false
+                    }
+                }
+            }
             addJavascriptInterface(Bridge(), "LexOS")
             loadUrl("https://appassets.androidplatform.net/assets/www/index.html")
         }
@@ -78,6 +99,16 @@ class MainActivity : Activity() {
             addAction(Intent.ACTION_PACKAGE_CHANGED)
             addDataScheme("package")
         })
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == CODE_PHOTO) {
+            choixFichier?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
+            choixFichier = null
+            return
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onDestroy() {
