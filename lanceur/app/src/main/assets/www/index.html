@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>LexOS PRO</title>
+<style>
+@font-face{font-family:Orbitron;src:url(polices/orbitron-latin-700-normal.woff2) format('woff2');font-weight:700}
+@font-face{font-family:Orbitron;src:url(polices/orbitron-latin-900-normal.woff2) format('woff2');font-weight:900}
+@font-face{font-family:'JetBrains Mono';src:url(polices/jetbrains-mono-latin-400-normal.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'JetBrains Mono';src:url(polices/jetbrains-mono-latin-700-normal.woff2) format('woff2');font-weight:700}
+
+:root{
+  --noir:#000000; --mat1:#0D0D0D; --mat2:#121212; --ligne:#2A2A2A;
+  --gris:#9A9A9A; --blanc:#EDEDED; --orange:#E8590C; --bouton:#C84B0A;
+  --haut:max(env(safe-area-inset-top),36px); --bas:max(env(safe-area-inset-bottom),18px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--noir);color:var(--blanc);font-family:'JetBrains Mono',ui-monospace,monospace;overflow:hidden;user-select:none;-webkit-user-select:none}
+button,input{font-family:inherit}
+img{-webkit-user-drag:none}
+
+/* ---------- animations ---------- */
+@keyframes blink{50%{opacity:0}}
+@keyframes rain{from{transform:translateY(-60%)}to{transform:translateY(110vh)}}
+@keyframes scan{from{transform:translateY(-120px)}to{transform:translateY(110vh)}}
+@keyframes type{from{max-width:0}to{max-width:100%}}
+@keyframes up{from{opacity:0;transform:translateY(16px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.6) rotate(-6deg)}70%{opacity:1;transform:scale(1.07)}100%{opacity:1;transform:none}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 1px var(--ligne),0 0 0 rgba(232,89,12,0)}50%{box-shadow:0 0 0 1px var(--orange),0 0 22px rgba(232,89,12,.35)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes clockglow{0%,100%{text-shadow:0 0 8px rgba(232,89,12,.3)}50%{text-shadow:0 0 22px rgba(232,89,12,.75)}}
+@keyframes sheen{from{transform:translateX(-90px) rotate(20deg)}to{transform:translateX(140px) rotate(20deg)}}
+@keyframes flash{0%{opacity:0}20%{opacity:.9}100%{opacity:0}}
+@keyframes launch{0%{transform:scale(1)}40%{transform:scale(.86)}100%{transform:scale(1.25);opacity:0}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes bar{from{width:0}to{width:100%}}
+.cur{display:inline-block;width:.55em;height:1.05em;vertical-align:-.18em;background:var(--orange);animation:blink 1s steps(1) infinite}
+.calme *{animation-duration:0s!important;animation-iteration-count:1!important}
+
+/* ---------- fond ---------- */
+#fond{position:fixed;inset:0;background:#000 url(fond.jpg) center/cover no-repeat}
+#pluie{position:fixed;inset:0;overflow:hidden;pointer-events:none;opacity:.22}
+#pluie div{position:absolute;top:0;width:12px;font-size:12px;line-height:16px;color:var(--orange);word-break:break-all;animation:rain linear infinite}
+#lignes{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 3px)}
+#balai{position:fixed;left:0;right:0;top:0;height:90px;pointer-events:none;background:linear-gradient(180deg,rgba(232,89,12,0),rgba(232,89,12,.09),rgba(232,89,12,0));animation:scan 6s linear infinite}
+
+/* ---------- démarrage ---------- */
+#boot{position:fixed;inset:0;z-index:50;background:#000;padding:calc(var(--haut) + 30px) 22px 0;font-size:12.5px;line-height:1.7;color:var(--gris);transition:opacity .5s ease}
+#boot .l{overflow:hidden;white-space:nowrap;max-width:0;animation:type .45s steps(30,end) forwards}
+#boot b{color:var(--orange);font-weight:700}
+#boot .logo{font-family:Orbitron;font-weight:900;font-size:34px;letter-spacing:.06em;color:#fff;margin:18px 0 6px;opacity:0;animation:up .5s ease-out forwards,clockglow 2s ease-in-out infinite}
+#boot .barre{height:3px;background:#1A1A1A;margin-top:16px;overflow:hidden}
+#boot .barre i{display:block;height:3px;background:var(--orange);animation:bar 1.6s ease-in-out forwards}
+
+/* ---------- accueil ---------- */
+#accueil{position:fixed;inset:0;padding:var(--haut) 16px var(--bas);display:flex;flex-direction:column;gap:14px;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .35s ease}
+#accueil.cache{transform:translateY(-6%) scale(.96);opacity:0;pointer-events:none}
+.heure{display:flex;justify-content:space-between;align-items:flex-end;padding:6px 4px 0}
+#horloge{font-family:Orbitron;font-weight:700;font-size:64px;line-height:1;color:#fff;animation:clockglow 3.5s ease-in-out infinite}
+#date{font-size:13px;color:var(--gris);text-align:right;line-height:1.5}
+#date span{color:var(--orange)}
+
+.term{border-radius:16px;background:rgba(10,10,10,.92);overflow:hidden;animation:glow 4s ease-in-out infinite}
+.term .barre{height:30px;padding:0 12px;display:flex;align-items:center;gap:6px;background:#141414;border-bottom:1px solid var(--ligne);font-size:11px;color:var(--gris)}
+.term .barre i{width:10px;height:10px;border-radius:5px;background:#3A3A3A}
+.term .barre i:first-child{background:var(--orange)}
+.term .corps{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;font-size:12px}
+.p{color:var(--orange)}.p2{color:var(--gris)}
+.neo{display:flex;gap:14px;align-items:center}
+.neo img{width:86px;height:104px;object-fit:contain;animation:float 4s ease-in-out infinite}
+.neo .infos{display:flex;flex-direction:column;gap:3px;font-size:11.5px;line-height:1.45;color:var(--gris);min-width:0}
+.neo .infos b{color:var(--orange);font-weight:700;display:inline-block;width:62px}
+.neo .infos span{color:var(--blanc)}
+.palette{display:flex;gap:4px;margin-top:4px}.palette i{width:16px;height:8px}
+.ligne-t{overflow:hidden;white-space:nowrap;max-width:0;animation:type .9s steps(26,end) forwards}
+
+.grille{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:16px;column-gap:6px}
+.app{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;padding:0;color:var(--gris);cursor:pointer;opacity:0;animation:pop .5s cubic-bezier(.2,.8,.2,1) forwards}
+.tuile{position:relative;width:60px;height:60px;border-radius:18px;background:var(--mat1);box-shadow:inset 0 0 0 1px var(--ligne);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:transform .15s ease}
+.tuile img.lex{width:100%;height:100%;object-fit:cover}
+.tuile img.sys{width:42px;height:42px;border-radius:10px}
+.tuile .reflet{position:absolute;top:-20px;left:0;width:16px;height:110px;background:rgba(255,255,255,.10);animation:sheen 4s ease-in-out infinite}
+.app:active .tuile{transform:scale(.9)}
+.app .nom{font-size:10.5px;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app.lance .tuile{animation:launch .38s ease-in forwards}
+
+.invite{height:50px;padding:0 6px 0 16px;border-radius:14px;background:rgba(13,13,13,.95);box-shadow:inset 0 0 0 1px var(--ligne);display:flex;align-items:center;gap:8px}
+.invite label{color:var(--orange);font-weight:700;font-size:13px}
+.invite input{flex:1;min-width:0;background:transparent;border:0;outline:none;font-size:13px;color:var(--blanc);caret-color:var(--orange)}
+.invite input::placeholder{color:#6E6E6E}
+.btn-o{width:40px;height:40px;border-radius:10px;border:0;background:var(--bouton);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn-o:active{transform:scale(.92)}
+
+.dock{margin-top:auto;padding:10px 14px;border-radius:24px;background:rgba(13,13,13,.95);box-shadow:inset 0 0 0 1px var(--ligne);display:flex;justify-content:space-between;align-items:center}
+.dock .app .nom{display:none}
+.dock .tuile{background:#000}
+.fleche{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--gris);padding-bottom:2px}
+.fleche svg{animation:bounce 1.6s ease-in-out infinite}
+
+/* ---------- tiroir ---------- */
+#tiroir{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.97);padding:var(--haut) 14px var(--bas);display:flex;flex-direction:column;gap:12px;transform:translateY(100%);transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+#tiroir.ouvert{transform:none}
+#tiroir h1{margin:0;font-family:Orbitron;font-weight:700;font-size:24px;color:#fff}
+.prog{height:2px;background:#1A1A1A;overflow:hidden}.prog i{display:block;height:2px;background:var(--orange);width:0}
+#tiroir.ouvert .prog i{animation:bar 1s ease-out .1s forwards}
+.filtres{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.filtres::-webkit-scrollbar{display:none}
+.chip{height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--ligne);background:var(--mat1);color:var(--gris);font-size:12px;white-space:nowrap;cursor:pointer}
+.chip.on{background:var(--bouton);border-color:var(--bouton);color:#fff;font-weight:700}
+#toutes{flex:1;overflow-y:auto;padding:4px 2px 30px;scrollbar-width:none}
+#toutes::-webkit-scrollbar{display:none}
+.compte{font-size:11px;color:var(--gris)}
+
+/* ---------- menu & toast ---------- */
+#menu{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:16px 16px calc(var(--bas) + 10px);background:#0A0A0A;border-top:1px solid var(--ligne);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:8px}
+#menu.ouvert{transform:none}
+#menu .titre{font-size:12px;color:var(--orange);padding:0 4px 6px}
+#menu button{height:50px;border-radius:12px;border:1px solid var(--ligne);background:var(--mat1);color:var(--blanc);font-size:13px;text-align:left;padding:0 16px;cursor:pointer}
+#menu button.pri{background:var(--bouton);border-color:var(--bouton);color:#fff;font-weight:700}
+#voile{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .3s}
+#voile.on{opacity:1;pointer-events:auto}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(var(--bas) + 96px);z-index:45;padding:12px 14px;border-radius:12px;background:#0A0A0A;box-shadow:inset 0 0 0 1px var(--orange);font-size:12px;color:var(--blanc);opacity:0;transform:translateY(10px);transition:all .25s ease;pointer-events:none}
+#toast.on{opacity:1;transform:none}
+#eclair{position:fixed;inset:0;z-index:30;background:var(--orange);opacity:0;pointer-events:none}
+#eclair.on{animation:flash .45s ease-out}
+</style>
+</head>
+<body>
+<div id="fond"></div>
+<div id="pluie" aria-hidden="true"></div>
+<div id="lignes" aria-hidden="true"></div>
+<div id="balai" aria-hidden="true"></div>
+
+<!-- ======== démarrage ======== -->
+<div id="boot" aria-hidden="true">
+  <div class="l" style="animation-delay:.05s"><b>[ OK ]</b> noyau lexos-pro chargé</div>
+  <div class="l" style="animation-delay:.35s"><b>[ OK ]</b> thème noir / orange / gris mat</div>
+  <div class="l" style="animation-delay:.65s"><b>[ OK ]</b> pont android → webview</div>
+  <div class="l" style="animation-delay:.95s"><b>[ OK ]</b> lecture des applications</div>
+  <div class="logo" style="animation-delay:1.2s">LEXOS PRO</div>
+  <div class="l" style="animation-delay:1.3s">root@lexos-pro:~# startx <span class="cur"></span></div>
+  <div class="barre"><i></i></div>
+</div>
+
+<!-- ======== accueil ======== -->
+<main id="accueil">
+  <div class="heure" style="animation:up .5s ease-out both">
+    <div id="horloge">--:--</div>
+    <div id="date"></div>
+  </div>
+
+  <section class="term" style="animation:up .5s ease-out .1s both, glow 4s ease-in-out infinite">
+    <div class="barre"><i></i><i></i><i></i><span style="margin-left:8px">alex@lexos-pro: ~</span></div>
+    <div class="corps">
+      <div class="ligne-t" style="animation-delay:.3s"><span class="p">alex@lexos-pro</span><span class="p2">:~$</span> neofetch</div>
+      <div class="neo" style="opacity:0;animation:up .5s ease-out 1.1s forwards">
+        <img src="mascotte.png" alt="">
+        <div class="infos">
+          <div><b>os</b><span>LexOS PRO</span></div>
+          <div><b>hôte</b><span id="hote">Galaxy A55</span></div>
+          <div><b>batterie</b><span id="batt">--</span></div>
+          <div><b>applis</b><span id="nbapps">--</span></div>
+          <div><b>shell</b><span>lexsh</span></div>
+          <div class="palette"><i style="background:#000;box-shadow:inset 0 0 0 1px #3A3A3A"></i><i style="background:#121212"></i><i style="background:#9A9A9A"></i><i style="background:#EDEDED"></i><i style="background:#C84B0A"></i><i style="background:#E8590C"></i></div>
+        </div>
+      </div>
+      <div class="ligne-t" style="animation-delay:1.7s"><span class="p">alex@lexos-pro</span><span class="p2">:~$</span> <span class="cur"></span></div>
+    </div>
+  </section>
+
+  <div class="grille" id="favoris"></div>
+
+  <form class="invite" id="formRecherche" style="animation:up .5s ease-out .5s both">
+    <label for="recherche">$</label>
+    <input id="recherche" type="text" autocomplete="off" spellcheck="false" placeholder="lexos --chercher…">
+    <button class="btn-o" type="submit" aria-label="Lancer">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </form>
+
+  <div class="dock" id="dock"></div>
+  <button class="fleche" id="ouvrirTiroir" style="border:0;background:none;cursor:pointer;margin-top:-6px">
+    <svg width="18" height="10" viewBox="0 0 18 10" aria-hidden="true"><path d="M2 8l7-6 7 6" fill="none" stroke="#E8590C" stroke-width="2" stroke-linecap="round"/></svg>
+    <span>ls /applications</span>
+  </button>
+</main>
+
+<!-- ======== tiroir ======== -->
+<section id="tiroir" aria-label="Toutes les applications">
+  <div style="font-size:13px"><span class="p">alex@lexos-pro</span><span class="p2">:~$</span> ls /applications</div>
+  <h1>Applications</h1>
+  <div class="prog"><i></i></div>
+  <div class="invite">
+    <label for="grep">grep</label>
+    <input id="grep" type="text" autocomplete="off" spellcheck="false" placeholder="chercher une app">
+    <span class="cur" aria-hidden="true"></span>
+  </div>
+  <div class="filtres" id="filtres"></div>
+  <div id="toutes"><div class="grille" id="grilleToutes"></div></div>
+  <div class="compte" id="compte"></div>
+</section>
+
+<div id="voile"></div>
+<div id="menu" role="dialog" aria-label="Menu LexOS">
+  <div class="titre">$ lexos-config</div>
+  <button id="mFav">★ épingler / retirer de l'accueil</button>
+  <button id="mInfo">i  infos de l'application</button>
+  <button id="mFond">▣ changer le fond d'écran</button>
+  <button id="mAnim">≈ animations : on</button>
+  <button id="mReg" class="pri">⚙ réglages android</button>
+</div>
+<div id="toast"></div>
+<div id="eclair"></div>
+
+<script>
+/* ===== pont Android (simulé dans un navigateur pour l'aperçu) ===== */
+const B = window.LexOS || {
+  getApps: () => JSON.stringify([
+    ['Téléphone','com.samsung.android.dialer'],['Messages','com.samsung.android.messaging'],['Internet','com.sec.android.app.sbrowser'],
+    ['Appareil photo','com.sec.android.app.camera'],['Termux','com.termux'],['Claude','com.anthropic.claude'],['Chrome','com.android.chrome'],
+    ['Galerie','com.sec.android.gallery3d'],['Mes fichiers','com.sec.android.app.myfiles'],['Paramètres','com.android.settings'],
+    ['YT Music','com.google.android.apps.youtube.music'],['Samsung Notes','com.samsung.android.app.notes'],['NetHunter','com.offsec.nethunter'],
+    ['Quick Share','com.samsung.android.app.sharelive'],['Dossier sécurisé','com.samsung.knox.securefolder'],['Entretien appareil','com.samsung.android.lool'],
+    ['Play Store','com.android.vending'],['Gmail','com.google.android.gm'],['Spotify','com.spotify.music'],['Calendrier','com.samsung.android.calendar']
+  ].map(([label,pkg])=>({label,pkg,cls:pkg+'.Main'}))),
+  getIcon: () => '', launch: (p)=>console.log('launch',p), appInfo(){}, battery: () => 78, device: () => 'SM-A556W',
+  openSettings(){}, openWallpaper(){}, expandNotifications(){}, search(q){console.log('search',q)}, vibrate(){}
+};
+
+/* ===== tes icônes LexOS, par application ===== */
+const ICONES = {
+  'com.sec.android.app.camera':'camera','com.google.android.GoogleCamera':'camera',
+  'com.android.settings':'reglages','com.sec.android.app.myfiles':'fichiers','com.google.android.documentsui':'fichiers',
+  'com.sec.android.app.sbrowser':'navigateur','org.mozilla.firefox':'navigateur','com.brave.browser':'navigateur','com.android.chrome':'chrome',
+  'com.google.android.apps.youtube.music':'yt-musique','com.spotify.music':'musique','com.samsung.android.app.music':'musique','com.sec.android.app.music':'musique',
+  'com.samsung.android.app.notes':'notes','com.google.android.keep':'notes',
+  'com.termux':'terminal','com.offsec.nhterm':'terminal','com.offsec.nethunter':'hacker',
+  'com.anthropic.claude':'claude','com.sec.android.gallery3d':'galerie','com.google.android.apps.photos':'galerie',
+  'com.samsung.android.lool':'diagnostic','com.samsung.android.sm':'diagnostic',
+  'com.samsung.android.app.sharelive':'partage','com.samsung.knox.securefolder':'securite','com.samsung.android.authfw':'securite',
+  'com.wssyncmldm':'mises-a-jour','com.sec.android.soagent':'mises-a-jour','com.samsung.android.app.updatecenter':'mises-a-jour',
+  'com.github.android':'opencode'
+};
+function iconeLexos(app){
+  if (ICONES[app.pkg]) return ICONES[app.pkg];
+  const l = app.label.toLowerCase();
+  if (l.includes('lexos')) return 'lexos-ia';
+  if (l.includes('ti-lex') || l.includes('tilex')) return 'ti-lex-al';
+  if (l.includes('marceau')) return 'profil';
+  if (l.includes('terminal')) return 'terminal';
+  return null;
+}
+const CATS = {
+  outils:['terminal','hacker','diagnostic','fichiers','securite','mises-a-jour','opencode','reglages','partage'],
+  ia:['claude','lexos-ia','ti-lex-al'],
+  media:['camera','galerie','musique','yt-musique','notes']
+};
+
+/* ===== état ===== */
+const lire = (k,d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } };
+const ecrire = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+let APPS = [], filtre = 'tout', cible = null;
+let favoris = lire('lexos.favoris', null);
+let calme = lire('lexos.calme', false);
+
+const $ = (s) => document.querySelector(s);
+function toast(t){ const e=$('#toast'); e.innerHTML=t; e.classList.add('on'); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove('on'),1600); }
+
+/* ===== pluie binaire ===== */
+(function(){
+  const bits='1011010011101001011010110010110100101101001110100101101', p=$('#pluie');
+  const n = Math.ceil(window.innerWidth/44);
+  for(let i=0;i<n;i++){ const d=document.createElement('div');
+    d.style.left=(6+i*44)+'px'; d.style.animationDuration=(7+(i%4)*2)+'s'; d.style.animationDelay=(-i*1.3)+'s';
+    d.style.opacity=(0.5+((i*7)%5)*0.12).toFixed(2); d.textContent=(bits.slice(i%9)+bits).slice(0,48); p.appendChild(d); }
+})();
+
+/* ===== heure, date, batterie ===== */
+const JOURS=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'], MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+function tic(){
+  const d=new Date(), h=String(d.getHours()).padStart(2,'0'), m=String(d.getMinutes()).padStart(2,'0');
+  $('#horloge').textContent=h+':'+m;
+  $('#date').innerHTML='$ date<br><span>'+JOURS[d.getDay()]+' '+d.getDate()+' '+MOIS[d.getMonth()]+'</span>';
+  try { $('#batt').textContent = B.battery()+' %'; } catch(e){}
+}
+try { $('#hote').textContent = B.device(); } catch(e){}
+tic(); setInterval(tic, 5000);
+
+/* ===== construction d'une tuile ===== */
+function tuile(app, i, base){
+  const b=document.createElement('button'); b.className='app'; b.type='button';
+  b.style.animationDelay=(base + i*0.045).toFixed(2)+'s';
+  b.setAttribute('aria-label', app.label);
+  const t=document.createElement('span'); t.className='tuile';
+  const img=document.createElement('img'); img.alt='';
+  const lx=iconeLexos(app);
+  if (lx){ img.src='icones/lexos-'+lx+'.png'; img.className='lex'; }
+  else { img.className='sys'; img.loading='lazy'; const u=B.getIcon(app.pkg); if(u) img.src=u; else { img.src='icones/lexos-terminal.png'; img.className='lex'; } }
+  t.appendChild(img);
+  const r=document.createElement('span'); r.className='reflet'; r.style.animationDelay=(i*0.37%4).toFixed(2)+'s'; t.appendChild(r);
+  const n=document.createElement('span'); n.className='nom'; n.textContent=app.label.toLowerCase();
+  b.append(t,n);
+  let appui=null, long=false;
+  b.addEventListener('pointerdown',()=>{ long=false; appui=setTimeout(()=>{ long=true; B.vibrate(); ouvrirMenu(app); },480); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(appui)));
+  b.addEventListener('click',()=>{ if(!long) lancer(app,b); });
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  return b;
+}
+
+function lancer(app, el){
+  B.vibrate();
+  if (el) el.classList.add('lance');
+  const e=$('#eclair'); e.classList.remove('on'); void e.offsetWidth; e.classList.add('on');
+  toast('<span style="color:#E8590C">$</span> exec '+app.pkg+' <span class="cur"></span>');
+  setTimeout(()=>{ B.launch(app.pkg, app.cls); }, 260);
+  setTimeout(()=>{ if (el) el.classList.remove('lance'); }, 900);
+}
+
+/* ===== accueil ===== */
+const DOCK_PKGS=[['com.samsung.android.dialer','com.google.android.dialer'],['com.samsung.android.messaging','com.google.android.apps.messaging'],
+  ['com.sec.android.app.sbrowser','com.android.chrome','org.mozilla.firefox'],['com.sec.android.app.camera','com.google.android.GoogleCamera']];
+function rendreAccueil(){
+  const parPkg=Object.fromEntries(APPS.map(a=>[a.pkg,a]));
+  if (!favoris){
+    const prefs=['com.termux','com.anthropic.claude','com.offsec.nethunter','com.sec.android.gallery3d','com.sec.android.app.myfiles','com.google.android.apps.youtube.music','com.samsung.android.app.notes','com.android.settings'];
+    favoris=prefs.filter(p=>parPkg[p]);
+    APPS.filter(a=>iconeLexos(a)&&!favoris.includes(a.pkg)).forEach(a=>{ if(favoris.length<8) favoris.push(a.pkg); });
+    APPS.forEach(a=>{ if(favoris.length<8&&!favoris.includes(a.pkg)) favoris.push(a.pkg); });
+  }
+  const g=$('#favoris'); g.innerHTML='';
+  favoris.map(p=>parPkg[p]).filter(Boolean).slice(0,8).forEach((a,i)=>g.appendChild(tuile(a,i,.6)));
+  const d=$('#dock'); d.innerHTML='';
+  DOCK_PKGS.map(opts=>opts.map(p=>parPkg[p]).find(Boolean)).filter(Boolean).forEach((a,i)=>d.appendChild(tuile(a,i,.9)));
+  $('#nbapps').textContent=APPS.length;
+}
+
+/* ===== tiroir ===== */
+function rendreFiltres(){
+  const f=$('#filtres'); f.innerHTML='';
+  [['tout','--tout'],['outils','--outils'],['ia','--ia'],['media','--média']].forEach(([k,t])=>{
+    const c=document.createElement('button'); c.className='chip'+(filtre===k?' on':''); c.textContent=t;
+    c.onclick=()=>{ filtre=k; B.vibrate(); rendreFiltres(); rendreTiroir(); }; f.appendChild(c);
+  });
+}
+function rendreTiroir(){
+  const q=$('#grep').value.trim().toLowerCase();
+  let liste=APPS.filter(a=>!q||a.label.toLowerCase().includes(q)||a.pkg.includes(q));
+  if (filtre!=='tout') liste=liste.filter(a=>CATS[filtre].includes(iconeLexos(a)));
+  const g=$('#grilleToutes'); g.innerHTML='';
+  liste.forEach((a,i)=>g.appendChild(tuile(a,i,.05)));
+  $('#compte').innerHTML=liste.length+' application'+(liste.length>1?'s':'')+' · <span style="color:#E8590C">lexos-pro</span>';
+}
+function ouvrirTiroir(){ $('#tiroir').classList.add('ouvert'); $('#accueil').classList.add('cache'); rendreTiroir(); }
+function fermerTiroir(){ $('#tiroir').classList.remove('ouvert'); $('#accueil').classList.remove('cache'); $('#grep').value=''; $('#grep').blur(); }
+
+/* ===== menu ===== */
+function ouvrirMenu(app){
+  cible=app;
+  $('#mFav').style.display=$('#mInfo').style.display=app?'block':'none';
+  if (app) $('#mFav').textContent=(favoris.includes(app.pkg)?'★ retirer de l\'accueil':'☆ épingler à l\'accueil')+' — '+app.label.toLowerCase();
+  $('#mAnim').textContent='≈ animations : '+(calme?'off':'on');
+  $('#menu').classList.add('ouvert'); $('#voile').classList.add('on');
+}
+function fermerMenu(){ $('#menu').classList.remove('ouvert'); $('#voile').classList.remove('on'); }
+$('#voile').onclick=fermerMenu;
+$('#mFav').onclick=()=>{ if(!cible) return;
+  if (favoris.includes(cible.pkg)) favoris=favoris.filter(p=>p!==cible.pkg);
+  else { favoris.push(cible.pkg); if(favoris.length>8) favoris.shift(); }
+  ecrire('lexos.favoris',favoris); rendreAccueil(); fermerMenu(); toast('<span style="color:#E8590C">[ OK ]</span> accueil mis à jour'); };
+$('#mInfo').onclick=()=>{ if(cible) B.appInfo(cible.pkg); fermerMenu(); };
+$('#mFond').onclick=()=>{ B.openWallpaper(); fermerMenu(); };
+$('#mReg').onclick=()=>{ B.openSettings(); fermerMenu(); };
+$('#mAnim').onclick=()=>{ calme=!calme; ecrire('lexos.calme',calme); document.body.classList.toggle('calme',calme); $('#mAnim').textContent='≈ animations : '+(calme?'off':'on'); };
+document.body.classList.toggle('calme',calme);
+
+/* ===== recherche ===== */
+$('#formRecherche').addEventListener('submit',e=>{
+  e.preventDefault(); const q=$('#recherche').value.trim(); if(!q) return;
+  const a=APPS.find(x=>x.label.toLowerCase().startsWith(q.toLowerCase()))||APPS.find(x=>x.label.toLowerCase().includes(q.toLowerCase()));
+  $('#recherche').value=''; $('#recherche').blur();
+  if (a) lancer(a,null); else B.search(q);
+});
+$('#grep').addEventListener('input',rendreTiroir);
+$('#ouvrirTiroir').onclick=()=>{ B.vibrate(); ouvrirTiroir(); };
+
+/* ===== gestes : glisser vers le haut = tiroir, vers le bas = notifications ===== */
+let y0=null, x0=null, t0=0;
+document.addEventListener('touchstart',e=>{ y0=e.touches[0].clientY; x0=e.touches[0].clientX; t0=Date.now(); },{passive:true});
+document.addEventListener('touchend',e=>{
+  if (y0===null) return; const dy=e.changedTouches[0].clientY-y0, dx=e.changedTouches[0].clientX-x0; const enTiroir=$('#tiroir').classList.contains('ouvert');
+  if (Math.abs(dy)>70 && Math.abs(dy)>Math.abs(dx)*1.4 && Date.now()-t0<600){
+    if (!enTiroir && dy<0) ouvrirTiroir();
+    else if (!enTiroir && dy>0) B.expandNotifications();
+    else if (enTiroir && dy>0 && $('#toutes').scrollTop<=0) fermerTiroir();
+  }
+  y0=null;
+},{passive:true});
+// appui long sur le fond de l'accueil = menu
+let fondAppui=null;
+$('#accueil').addEventListener('pointerdown',e=>{ if(e.target.closest('button,input,form')) return; fondAppui=setTimeout(()=>{ B.vibrate(); ouvrirMenu(null); },550); });
+['pointerup','pointermove','pointercancel'].forEach(ev=>$('#accueil').addEventListener(ev,()=>clearTimeout(fondAppui)));
+
+/* ===== appels depuis Android ===== */
+window.lexosBack=()=>{ if($('#menu').classList.contains('ouvert')) fermerMenu(); else fermerTiroir(); };
+window.lexosHome=()=>{ fermerMenu(); fermerTiroir(); };
+window.lexosResume=()=>{ tic(); };
+window.lexosRefresh=()=>{ charger(); };
+
+function charger(){
+  try { APPS=JSON.parse(B.getApps()); } catch(e){ APPS=[]; }
+  APPS.sort((a,b)=>a.label.localeCompare(b.label,'fr'));
+  rendreAccueil(); rendreFiltres(); if($('#tiroir').classList.contains('ouvert')) rendreTiroir();
+}
+charger();
+
+/* ===== fin du démarrage ===== */
+setTimeout(()=>{ const b=$('#boot'); b.style.opacity='0'; setTimeout(()=>b.remove(),550); }, calme?200:2100);
+</script>
+</body>
+</html>
