@@ -11,8 +11,8 @@ android {
         applicationId = "ca.lexos.lanceur"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
     }
 
     // Clé de signature : fournie par GitHub (secret LEXOS_KEYSTORE) pour que

@@ -39,6 +39,8 @@ class MainActivity : Activity() {
     private val iconCache = HashMap<String, String>()
     private var choixFichier: ValueCallback<Array<Uri>>? = null
     private val CODE_PHOTO = 42
+    private val CODE_APPEL = 7
+    private var numeroEnAttente: String? = null
 
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context?, i: Intent?) {
@@ -111,6 +113,25 @@ class MainActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    private fun lancerAppel(num: String, direct: Boolean) {
+        val uri = Uri.parse("tel:" + Uri.encode(num))
+        try {
+            startActivity(Intent(if (direct) Intent.ACTION_CALL else Intent.ACTION_DIAL, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        } catch (e: Exception) {
+            startActivity(Intent(Intent.ACTION_DIAL, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == CODE_APPEL) {
+            val num = numeroEnAttente ?: return
+            numeroEnAttente = null
+            val ok = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            lancerAppel(num, ok)
+        }
+    }
+
     override fun onDestroy() {
         try { unregisterReceiver(packageReceiver) } catch (_: Exception) {}
         super.onDestroy()
@@ -125,6 +146,15 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         web.evaluateJavascript("window.lexosResume && lexosResume()", null)
+        // SMS / appel reçu pendant qu'on était ailleurs : l'animer à l'accueil
+        val pr = getSharedPreferences("lexos", MODE_PRIVATE)
+        val t = pr.getLong("evt_t", 0L)
+        if (t > pr.getLong("evt_vu", 0L) && System.currentTimeMillis() - t < 10 * 60 * 1000) {
+            pr.edit().putLong("evt_vu", t).apply()
+            val o = JSONObject().put("type", pr.getString("evt_type", "sms")).put("nom", pr.getString("evt_nom", ""))
+                .put("pkg", pr.getString("evt_pkg", ""))
+            web.evaluateJavascript("window.lexosEvenement && lexosEvenement(" + o.toString() + ")", null)
+        }
     }
 
     @Deprecated("Deprecated in Java")
@@ -234,6 +264,79 @@ class MainActivity : Activity() {
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }
             }
+        }
+
+        /** État des autorisations : notifications, bannières, clavier. */
+        @JavascriptInterface
+        fun etat(): String {
+            val notifs = androidx.core.app.NotificationManagerCompat.getEnabledListenerPackages(this@MainActivity).contains(packageName)
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            val clavier = imm.enabledInputMethodList.any { it.packageName == packageName }
+            return JSONObject().put("notifs", notifs).put("bannieres", Settings.canDrawOverlays(this@MainActivity))
+                .put("clavier", clavier).put("verrou", LexOSApp.verrouActif(this@MainActivity)).toString()
+        }
+
+        @JavascriptInterface
+        fun activerNotifs() {
+            runOnUiThread { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
+
+        @JavascriptInterface
+        fun activerBannieres() {
+            runOnUiThread {
+                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+        }
+
+        @JavascriptInterface
+        fun activerClavier() {
+            runOnUiThread { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
+
+        @JavascriptInterface
+        fun choisirClavier() {
+            runOnUiThread {
+                (getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager).showInputMethodPicker()
+            }
+        }
+
+        /** Composeur LexOS : appeler un numéro (demande la permission la 1re fois). */
+        @JavascriptInterface
+        fun appeler(num: String) {
+            runOnUiThread {
+                if (checkSelfPermission(android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                    lancerAppel(num, true)
+                } else {
+                    numeroEnAttente = num
+                    requestPermissions(arrayOf(android.Manifest.permission.CALL_PHONE), CODE_APPEL)
+                }
+            }
+        }
+
+        /** Écran de verrouillage LexOS : activer / désactiver / essayer. */
+        @JavascriptInterface
+        fun setVerrou(on: Boolean) {
+            getSharedPreferences("lexos", MODE_PRIVATE).edit().putBoolean("verrou", on).apply()
+        }
+
+        @JavascriptInterface
+        fun essaiVerrou() {
+            runOnUiThread {
+                startActivity(Intent(this@MainActivity, VerrouActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+        }
+
+        @JavascriptInterface
+        fun setCalme(on: Boolean) {
+            getSharedPreferences("lexos", MODE_PRIVATE).edit().putBoolean("calme", on).apply()
+        }
+
+        /** Essai : bannière par-dessus les applis avec un nom. */
+        @JavascriptInterface
+        fun testBanniere(type: String, nom: String) {
+            Banniere.montrer(this@MainActivity, type, nom, null)
         }
 
         @JavascriptInterface

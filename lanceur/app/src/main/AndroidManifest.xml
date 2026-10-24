@@ -7,8 +7,14 @@
         tools:ignore="QueryAllPackagesPermission" />
     <!-- Pour ouvrir le volet de notifications / réglages rapides. -->
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    <!-- Bannière « nom du contact » par-dessus les autres applis (SMS / appels). -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Composeur LexOS : appeler directement. -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <application
+        android:name=".LexOSApp"
         android:label="LexOS PRO"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/LexOS"
@@ -30,5 +36,40 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Écran de verrouillage LexOS (par-dessus le verrouillage Samsung). -->
+        <activity
+            android:name=".VerrouActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="ca.lexos.lanceur.verrou"
+            android:screenOrientation="portrait"
+            android:noHistory="false"
+            android:theme="@style/LexOS" />
+
+        <!-- Écoute des notifications SMS / appels pour animer le nom du contact. -->
+        <service
+            android:name=".NotifService"
+            android:label="LexOS PRO — noms animés"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- Clavier LexOS PRO. -->
+        <service
+            android:name=".ClavierService"
+            android:label="Clavier LexOS PRO"
+            android:exported="true"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data android:name="android.view.im" android:resource="@xml/clavier" />
+        </service>
     </application>
 </manifest>

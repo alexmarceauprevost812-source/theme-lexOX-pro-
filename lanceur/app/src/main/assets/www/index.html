@@ -149,6 +149,46 @@ img{-webkit-user-drag:none}
 @keyframes sp-icone{0%{transform:scale(.3) rotate(-180deg);opacity:0}60%{transform:scale(1.12) rotate(8deg);opacity:1}100%{transform:none}}
 @keyframes lettre{0%{opacity:0;transform:translateY(-60px) rotateX(90deg);color:var(--sp);text-shadow:0 0 20px var(--sp)}70%{opacity:1;color:var(--sp)}100%{opacity:1;transform:none;color:#fff;text-shadow:0 0 14px var(--spc)}}
 @keyframes vague{0%,100%{translate:0 0}50%{translate:0 -5px}}
+/* Termux : le titre se tape comme dans un terminal */
+#splash.term img{animation:sp-term .6s cubic-bezier(.2,.8,.2,1) both}
+#splash.term .titre span{animation:tape .01s steps(1) forwards}
+@keyframes tape{to{opacity:1;color:#fff;text-shadow:0 0 12px var(--spc)}}
+@keyframes sp-term{0%{transform:translateX(-140px);opacity:0}100%{transform:none;opacity:1}}
+/* NetHunter : glitch rouge/cyan */
+#splash.glitch img{animation:sp-icone 1s cubic-bezier(.2,.8,.2,1) both,glitch-img .9s steps(1) .5s infinite}
+#splash.glitch .titre{animation:glitch-txt .6s steps(1) .7s infinite}
+@keyframes glitch-img{0%{clip-path:none;transform:none}20%{clip-path:inset(20% 0 55% 0);transform:translateX(-6px)}40%{clip-path:inset(60% 0 10% 0);transform:translateX(5px)}60%{clip-path:none;transform:none}80%{clip-path:inset(40% 0 35% 0);transform:translateX(3px)}}
+@keyframes glitch-txt{0%{text-shadow:2px 0 #FF2B4A,-2px 0 #22D3EE;transform:none}25%{text-shadow:-3px 0 #FF2B4A,3px 0 #22D3EE;transform:translateX(2px) skewX(-6deg)}50%{text-shadow:2px 0 #FF2B4A,-2px 0 #22D3EE;transform:none}75%{text-shadow:4px 0 #FF2B4A,-4px 0 #22D3EE;transform:translateX(-3px)}}
+/* Ti-Lex-Al : le feu */
+#splash.feu .halo{animation:flamme .18s ease-in-out infinite alternate}
+#splash.feu img{animation:sp-feu 1.1s cubic-bezier(.2,.8,.2,1) both}
+#splash.feu .titre span{animation:lettre-feu .6s cubic-bezier(.3,1.5,.5,1) forwards,vague 1.4s ease-in-out infinite}
+@keyframes flamme{from{transform:scale(.95);opacity:.8}to{transform:scale(1.08);opacity:1}}
+@keyframes sp-feu{0%{transform:translateY(80px) scale(.6);opacity:0;filter:brightness(2.5) drop-shadow(0 0 20px #FF5A14)}60%{transform:translateY(-8px) scale(1.08);opacity:1}100%{transform:none;filter:drop-shadow(0 0 14px rgba(255,90,20,.7))}}
+@keyframes lettre-feu{0%{opacity:0;transform:translateY(50px) scale(.6);color:#FF2B0A;text-shadow:0 0 24px #FF5A14}60%{opacity:1;color:#FFC53D}100%{opacity:1;transform:none;color:#fff;text-shadow:0 -2px 10px #FF7A1A,0 0 22px rgba(255,60,10,.6)}}
+.braise{position:absolute;bottom:-10px;border-radius:50%;background:#FFB13D;box-shadow:0 0 8px #FF5A14;animation:braise 1.4s ease-in infinite;opacity:0}
+@keyframes braise{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-75vh) translateX(20px);opacity:0}}
+/* terminal LexOS PRO v4 : grosses lettres █ (appels, SMS, nom du contact) */
+#splash .v4{display:none;position:relative;flex-direction:column;align-items:center;gap:12px;padding:0 14px}
+#splash.v4 .v4{display:flex}
+#splash.v4 .logo,#splash.v4 .titre,#splash.v4 .barre,#splash.v4 .ligne{display:none}
+#splash.v4 .halo{background:radial-gradient(closest-side,rgba(255,140,0,.22),rgba(0,0,0,0))}
+.v4 .tete4{font-size:13px;color:#39FF88;overflow:hidden;white-space:nowrap;max-width:0;animation:type .6s steps(28,end) .05s forwards}
+.v4 pre{margin:0;font-family:'JetBrains Mono',monospace;font-weight:700;line-height:.95;color:#FF8C00;text-shadow:0 0 8px rgba(255,140,0,.85),0 0 22px rgba(255,140,0,.35);animation:crt .32s steps(2) .95s 2}
+.v4 pre span{display:block;opacity:0;animation:rangee .12s steps(1) forwards}
+.v4 .pied4{font-size:12px;font-weight:700;opacity:0;animation:up .3s ease-out 1.15s forwards}
+.v4 .pied4 b{color:#FF8C00}.v4 .pied4 i{color:#39FF88;font-style:normal}
+.v4 .spin4{font-size:12px;color:var(--gris);opacity:0;animation:up .3s ease-out 1.3s forwards}
+@keyframes rangee{to{opacity:1}}
+@keyframes crt{0%{opacity:.35;filter:brightness(1.8)}50%{opacity:1}100%{opacity:.7}}
+/* applis Samsung : orbite bleue */
+#splash.galaxy .anneau{display:block;animation:orbite .9s linear infinite}
+#splash.galaxy .anneau circle{stroke:var(--sp);stroke-dasharray:90 300;stroke-dashoffset:0;filter:drop-shadow(0 0 7px var(--sp));animation:none}
+#splash.galaxy img{animation:sp-galaxy .7s cubic-bezier(.2,.8,.2,1) both}
+#splash.galaxy .barre i{animation-duration:.7s}
+#splash.galaxy .ligne{animation-delay:.3s;animation-duration:.5s}
+@keyframes orbite{to{transform:rotate(360deg)}}
+@keyframes sp-galaxy{0%{transform:scale(.2);opacity:0;filter:drop-shadow(0 0 0 #3D8BFF)}60%{transform:scale(1.12);opacity:1;filter:drop-shadow(0 0 18px #3D8BFF)}100%{transform:none;filter:drop-shadow(0 0 8px rgba(61,139,255,.5))}}
 /* nom de Claude qui ondule sous la tuile */
 .app.anime .nom span{display:inline-block;animation:vague 1.8s ease-in-out infinite}
 #splash.gpt .titre span{animation:lettre .55s cubic-bezier(.3,1.5,.5,1) forwards,vague 1.2s ease-in-out infinite}
@@ -165,6 +205,43 @@ img{-webkit-user-drag:none}
 #splash .scan{position:absolute;left:-10px;right:-10px;height:3px;top:0;background:#A6FF00;box-shadow:0 0 12px #A6FF00;opacity:0;display:none}
 #splash.gpt .scan{display:block;animation:balaye .9s ease-in-out .15s 1 both}
 @keyframes balaye{0%{top:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:100%;opacity:0}}
+
+/* ---------- composeur LexOS ---------- */
+#composeur{position:fixed;inset:0;z-index:46;background:#000;padding:var(--haut) 22px calc(var(--bas) + 8px);display:flex;flex-direction:column;gap:14px;transform:translateY(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+#composeur.ouvert{transform:none}
+#numero{min-height:72px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;font-family:Orbitron;font-weight:700;font-size:40px;color:#fff;letter-spacing:.02em;padding:6px 0;border-bottom:1px solid #1A1A1A}
+#numero .chiffre{width:.7em}
+#numero .groupe{width:.35em}
+#numero:empty::before{content:'_';color:#3A3A3A;animation:blink 1s steps(1) infinite}
+.pave{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:auto}
+.pave button{height:68px;border-radius:20px;border:0;background:var(--mat2);box-shadow:inset 0 0 0 1px var(--ligne);color:#fff;font-family:Orbitron;font-weight:700;font-size:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;transition:transform .1s,box-shadow .2s}
+.pave button small{font-family:'JetBrains Mono';font-weight:400;font-size:10px;color:var(--gris);letter-spacing:.15em}
+.pave button:active,.pave button.tape{transform:scale(.93);box-shadow:inset 0 0 0 2px var(--orange),0 0 18px rgba(232,89,12,.5)}
+.actions{display:flex;justify-content:space-between;align-items:center;padding:0 12px}
+.actions .rond{width:56px;height:56px;border-radius:28px;border:1px solid var(--ligne);background:var(--mat1);color:var(--gris);font-size:20px;cursor:pointer}
+#appelBtn{width:76px;height:76px;border-radius:38px;border:0;background:var(--bouton);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:pulse-appel 1.6s ease-out infinite}
+@keyframes pulse-appel{0%{box-shadow:0 0 0 0 rgba(232,89,12,.6)}100%{box-shadow:0 0 0 22px rgba(232,89,12,0)}}
+
+/* ---------- panneau latéral ---------- */
+#poignee{position:fixed;right:0;top:34%;z-index:25;width:22px;height:96px;border:0;padding:0;background:none;cursor:pointer;display:flex;justify-content:flex-end}
+#poignee i{width:5px;height:96px;border-radius:3px 0 0 3px;background:var(--orange);opacity:.75;box-shadow:0 0 12px rgba(232,89,12,.7);animation:respire 2.4s ease-in-out infinite}
+@keyframes respire{0%,100%{opacity:.45;transform:scaleY(.85)}50%{opacity:.95;transform:none}}
+#edge{position:fixed;right:10px;top:50%;z-index:42;width:176px;max-height:78vh;padding:14px 12px;border-radius:24px;background:rgba(10,10,10,.97);box-shadow:inset 0 0 0 1px var(--ligne),0 0 30px rgba(232,89,12,.25);display:flex;flex-direction:column;gap:12px;transform:translate(120%,-50%);transition:transform .38s cubic-bezier(.2,.9,.25,1.15)}
+#edge.ouvert{transform:translate(0,-50%)}
+#edge .tete{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--gris)}
+#edge .tete b{color:var(--orange)}
+#edge .liste{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 6px;overflow-y:auto;scrollbar-width:none}
+#edge .app{animation:none;opacity:1}
+#edge.ouvert .app{animation:edge-in .4s cubic-bezier(.2,.8,.2,1) both}
+@keyframes edge-in{from{opacity:0;transform:translateX(50px) rotate(8deg)}to{opacity:1;transform:none}}
+#edge .plus{height:40px;border-radius:12px;border:1px dashed var(--orange);background:transparent;color:var(--orange);font-size:12px;cursor:pointer}
+#edge .vide{grid-column:1/-1;font-size:11px;color:var(--gris);text-align:center;padding:8px 0}
+#choix{position:fixed;inset:0;z-index:48;background:#000;padding:var(--haut) 14px var(--bas);display:none;flex-direction:column;gap:12px}
+#choix.ouvert{display:flex;animation:up .3s ease-out}
+#choix .grille{flex:1;overflow-y:auto;align-content:start}
+#choix .app{position:relative}
+#choix .app.pris .tuile{box-shadow:inset 0 0 0 2px var(--orange),0 0 14px rgba(232,89,12,.5)}
+#choix .app.pris::after{content:'✓';position:absolute;top:-4px;right:6px;width:20px;height:20px;border-radius:10px;background:var(--bouton);color:#fff;font-size:12px;line-height:20px;text-align:center}
 
 /* ---------- menu & toast ---------- */
 #menu{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:16px 16px calc(var(--bas) + 10px);background:#0A0A0A;border-top:1px solid var(--ligne);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:8px}
@@ -230,7 +307,10 @@ img{-webkit-user-drag:none}
     <form class="invite" id="formRecherche" style="animation:up .5s ease-out .5s both">
       <label for="recherche">$</label>
       <input id="recherche" type="text" autocomplete="off" spellcheck="false" placeholder="lexos --chercher…">
-      <button class="btn-o" type="submit" aria-label="Lancer">
+      <button class="btn-o" type="button" id="ouvrirComposeur" aria-label="Composeur LexOS" style="background:var(--mat2);box-shadow:inset 0 0 0 1px var(--orange)">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z" fill="none" stroke="#E8590C" stroke-width="2" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="btn-o" type="submit" aria-label="Lancer">
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </form>
@@ -260,12 +340,38 @@ img{-webkit-user-drag:none}
   <div class="compte" id="compte"></div>
 </section>
 
+<section id="composeur" aria-label="Composeur LexOS">
+  <div style="font-size:13px"><span class="p">alex@lexos-pro</span><span class="p2">:~$</span> appel --numero <span class="cur"></span></div>
+  <div id="numero" aria-live="polite"></div>
+  <div class="pave" id="pave"></div>
+  <div class="actions">
+    <button class="rond" id="composeurFermer" aria-label="Fermer">✕</button>
+    <button id="appelBtn" aria-label="Appeler"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z" fill="#fff"/></svg></button>
+    <button class="rond" id="composeurEffacer" aria-label="Effacer">⌫</button>
+  </div>
+</section>
+<button id="poignee" aria-label="Ouvrir le panneau latéral"><i></i></button>
+<aside id="edge" aria-label="Panneau latéral">
+  <div class="tete"><span><b>$</b> edge</span><span id="edgeNb"></span></div>
+  <div class="liste" id="edgeListe"></div>
+  <button class="plus" id="edgePlus">+ ajouter des applis</button>
+</aside>
+<section id="choix" aria-label="Choisir les applis du panneau">
+  <div style="font-size:13px"><span class="p">alex@lexos-pro</span><span class="p2">:~$</span> edge --ajouter</div>
+  <div class="entete"><span class="p2">touche pour cocher · max 10</span><b id="choixNb">0/10</b></div>
+  <div class="grille" id="choixGrille"></div>
+  <button class="btn-o" id="choixOk" style="width:100%;height:50px;color:#fff;font-size:14px;font-weight:700">$ enregistrer</button>
+</section>
 <div id="voile"></div>
 <div id="menu" role="dialog" aria-label="Menu LexOS">
   <div class="titre">$ lexos-config</div>
   <button id="mFav">★ épingler / retirer de l'accueil</button>
+  <button id="mEdge">⇤ ajouter au panneau latéral</button>
   <button id="mInfo">i  infos de l'application</button>
   <button id="mPhoto">☺ changer ma photo du widget</button>
+  <button id="mNoms">✉ noms animés sms / appels</button>
+  <button id="mClavier">⌨ clavier LexOS PRO</button>
+  <button id="mVerrou">🔒 écran de verrouillage LexOS</button>
   <button id="mFond">▣ changer l'image de fond</button>
   <button id="mOrig">↺ remettre les images LexOS</button>
   <button id="mAnim">≈ animations : on</button>
@@ -274,7 +380,7 @@ img{-webkit-user-drag:none}
 <input type="file" id="choixImage" accept="image/*" hidden>
 <div id="toast"></div>
 <div id="eclair"></div>
-<div id="splash" aria-hidden="true"><div class="halo"></div><div class="logo"><img alt="" src="icones/lexos-claude.png" style="width:104px;height:104px"><svg class="anneau" viewBox="0 0 132 132"><circle cx="66" cy="66" r="62" transform="rotate(-90 66 66)"/></svg><div class="scan"></div></div><div class="titre" id="splashTitre"></div><div class="barre"><i></i></div><div class="ligne" id="splashLigne"></div></div>
+<div id="splash" aria-hidden="true"><div class="halo"></div><div class="logo"><img alt="" src="icones/lexos-claude.png" style="width:104px;height:104px"><svg class="anneau" viewBox="0 0 132 132"><circle cx="66" cy="66" r="62" transform="rotate(-90 66 66)"/></svg><div class="scan"></div></div><div class="titre" id="splashTitre"></div><div class="v4"><div class="tete4" id="tete4"></div><pre id="bloc4"></pre><div class="pied4"><b>TI-LEX TERMINAL PRO</b> <i>v4</i></div><div class="spin4" id="spin4"></div></div><div class="barre"><i></i></div><div class="ligne" id="splashLigne"></div></div>
 
 <script>
 /* ===== pont Android (simulé dans un navigateur pour l'aperçu) ===== */
@@ -288,7 +394,7 @@ const B = window.LexOS || {
     ['Play Store','com.android.vending'],['Gmail','com.google.android.gm'],['Spotify','com.spotify.music'],['Calendrier','com.samsung.android.calendar']
   ].map(([label,pkg])=>({label,pkg,cls:pkg+'.Main'}))),
   getIcon: () => '', launch: (p)=>console.log('launch',p), appInfo(){}, battery: () => 78, device: () => 'SM-A556W',
-  openSettings(){}, openWallpaper(){}, expandNotifications(){}, search(q){console.log('search',q)}, vibrate(){}
+  openSettings(){}, openWallpaper(){}, etat:()=>'{"notifs":true,"bannieres":true,"clavier":false}', activerNotifs(){}, activerBannieres(){}, activerClavier(){}, choisirClavier(){}, testBanniere(){}, appeler(n){console.log('appel',n)}, setVerrou(){}, essaiVerrou(){}, setCalme(){}, expandNotifications(){}, search(q){console.log('search',q)}, vibrate(){}
 };
 
 /* ===== tes icônes LexOS, par application ===== */
@@ -322,8 +428,27 @@ const CATS = {
 
 const TITRES = {
   'com.anthropic.claude': { t:'CLAUDE',  c:'#E8590C', h:'rgba(232,89,12,.35)', cl:'' },
-  'com.openai.chatgpt':   { t:'CHATGPT', c:'#A6FF00', h:'rgba(166,255,0,.28)', cl:'gpt' }
+  'com.openai.chatgpt':   { t:'CHATGPT', c:'#A6FF00', h:'rgba(166,255,0,.28)', cl:'gpt' },
+  'com.samsung.android.dialer':    { t:'APPEL', c:'#FF8C00', h:'rgba(255,140,0,.3)', cl:'v4', d:1150 },
+  'com.google.android.dialer':     { t:'APPEL', c:'#FF8C00', h:'rgba(255,140,0,.3)', cl:'v4', d:1150 },
+  'com.samsung.android.messaging': { t:'SMS',   c:'#FF8C00', h:'rgba(255,140,0,.3)', cl:'v4', d:1150 },
+  'com.google.android.apps.messaging': { t:'SMS', c:'#FF8C00', h:'rgba(255,140,0,.3)', cl:'v4', d:1150 },
+  'com.samsung.android.app.contacts':  { t:'CONTACTS', c:'#FF8C00', h:'rgba(255,140,0,.3)', cl:'v4', d:1150 },
+  'com.termux':           { t:'TERMUX',  c:'#E8590C', h:'rgba(232,89,12,.30)', cl:'term' },
+  'com.offsec.nhterm':    { t:'NH-TERM', c:'#E8590C', h:'rgba(232,89,12,.30)', cl:'term' },
+  'com.offsec.nethunter': { t:'NETHUNTER', c:'#FF2B4A', h:'rgba(255,43,74,.30)', cl:'glitch' }
 };
+// applis reconnues par leur nom (paquet inconnu d'avance)
+function titreDe(app){
+  if (TITRES[app.pkg]) return TITRES[app.pkg];
+  const l=app.label.toLowerCase();
+  if (l.includes('ti-lex') || l.includes('tilex')) return { t:'TI-LEX-AL', c:'#FF7A1A', h:'rgba(255,90,20,.40)', cl:'feu' };
+  if (l.includes('lexos')) return { t:'LEXOS', c:'#E8590C', h:'rgba(232,89,12,.35)', cl:'' };
+  // applis officielles Samsung : titre « galaxy » plus court (on les ouvre souvent)
+  if (/^com\.(samsung|sec)\./.test(app.pkg) || app.pkg==='com.android.settings' || app.pkg==='com.wssyncmldm')
+    return { t:app.label.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase(), c:'#3D8BFF', h:'rgba(61,139,255,.32)', cl:'galaxy', d:800 };
+  return null;
+}
 
 /* ===== état ===== */
 const lire = (k,d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } };
@@ -390,7 +515,7 @@ function tuile(app, i, base){
   t.appendChild(img);
   const r=document.createElement('span'); r.className='reflet'; r.style.animationDelay=(i*0.37%4).toFixed(2)+'s'; t.appendChild(r);
   const n=document.createElement('span'); n.className='nom';
-  if (TITRES[app.pkg]){ b.classList.add('anime'); n.style.color=TITRES[app.pkg].c; [...app.label.toLowerCase()].forEach((c,k)=>{ const l=document.createElement('span'); l.textContent=c; l.style.animationDelay=(k*0.12)+'s'; n.appendChild(l); }); }
+  if (titreDe(app) && titreDe(app).cl!=='galaxy'){ b.classList.add('anime'); n.style.color=titreDe(app).c; [...app.label.toLowerCase()].forEach((c,k)=>{ const l=document.createElement('span'); l.textContent=c; l.style.animationDelay=(k*0.12)+'s'; n.appendChild(l); }); }
   else n.textContent=app.label.toLowerCase();
   b.append(t,n);
   let appui=null, long=false;
@@ -401,19 +526,56 @@ function tuile(app, i, base){
   return b;
 }
 
+const POLICE5={'A':[" ### ", "#   #", "#####", "#   #", "#   #"],'B':["#### ", "#   #", "#### ", "#   #", "#### "],'C':[" ####", "#    ", "#    ", "#    ", " ####"],'D':["#### ", "#   #", "#   #", "#   #", "#### "],'E':["#####", "#    ", "#### ", "#    ", "#####"],'F':["#####", "#    ", "#### ", "#    ", "#    "],'G':[" ####", "#    ", "#  ##", "#   #", " ####"],'H':["#   #", "#   #", "#####", "#   #", "#   #"],'I':["#####", "  #  ", "  #  ", "  #  ", "#####"],'J':["#####", "   # ", "   # ", "#  # ", " ##  "],'K':["#   #", "#  # ", "###  ", "#  # ", "#   #"],'L':["#    ", "#    ", "#    ", "#    ", "#####"],'M':["#   #", "## ##", "# # #", "#   #", "#   #"],'N':["#   #", "##  #", "# # #", "#  ##", "#   #"],'O':[" ### ", "#   #", "#   #", "#   #", " ### "],'P':["#### ", "#   #", "#### ", "#    ", "#    "],'Q':[" ### ", "#   #", "# # #", "#  # ", " ## #"],'R':["#### ", "#   #", "#### ", "#  # ", "#   #"],'S':[" ####", "#    ", " ### ", "    #", "#### "],'T':["#####", "  #  ", "  #  ", "  #  ", "  #  "],'U':["#   #", "#   #", "#   #", "#   #", " ### "],'V':["#   #", "#   #", "#   #", " # # ", "  #  "],'W':["#   #", "#   #", "# # #", "## ##", "#   #"],'X':["#   #", " # # ", "  #  ", " # # ", "#   #"],'Y':["#   #", " # # ", "  #  ", "  #  ", "  #  "],'Z':["#####", "   # ", "  #  ", " #   ", "#####"],'0':[" ### ", "#  ##", "# # #", "##  #", " ### "],'1':["  #  ", " ##  ", "  #  ", "  #  ", " ### "],'2':[" ### ", "#   #", "  ## ", " #   ", "#####"],'3':["#### ", "    #", " ### ", "    #", "#### "],'4':["#   #", "#   #", "#####", "    #", "    #"],'5':["#####", "#    ", "#### ", "    #", "#### "],'6':[" ### ", "#    ", "#### ", "#   #", " ### "],'7':["#####", "   # ", "  #  ", " #   ", "#    "],'8':[" ### ", "#   #", " ### ", "#   #", " ### "],'9':[" ### ", "#   #", " ####", "    #", " ### "],'-':["     ", "     ", "#####", "     ", "     "],'+':["     ", "  #  ", " ### ", "  #  ", "     "],' ':["   ", "   ", "   ", "   ", "   "]};
+function court5(nom){ const m=(nom||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().split(/\s+/)[0]||'?';
+  return ([...m.toUpperCase()].filter(c=>POLICE5[c]).join('').slice(0,9))||'?'; }
+function lignes5(mot){ const out=['','','','','']; [...mot].forEach((c,i)=>{ const g=POLICE5[c]||POLICE5[' ']; for(let r=0;r<5;r++){ out[r]+=(i?' ':'')+g[r]; } }); return out.map(l=>l.replace(/#/g,'█')); }
+let spinIv=null;
+function remplirV4(tete, mot, spin){
+  $('#tete4').textContent=tete; const t=$('#tete4'); t.style.animation='none'; void t.offsetWidth; t.style.animation='';
+  const pre=$('#bloc4'); pre.innerHTML=''; const L=lignes5(mot);
+  pre.style.fontSize=Math.min(26, (window.innerWidth-60)/(L[0].length*0.62)).toFixed(1)+'px';
+  L.forEach((l,r)=>{ const sp=document.createElement('span'); sp.textContent=l; sp.style.animationDelay=(0.35+r*0.1)+'s'; pre.appendChild(sp); });
+  clearInterval(spinIv); const S='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'; let k=0; $('#spin4').textContent='';
+  if (spin) spinIv=setInterval(()=>{ $('#spin4').innerHTML='<span style="color:#39FF88">'+S[k++%S.length]+'</span> '+spin; },80);
+}
+/* SMS / appel reçu : nom du contact animé (appelé par Android au retour sur l'accueil) */
+window.lexosEvenement=(e)=>{
+  if (!e || !e.nom) return;
+  const sp=$('#splash'); sp.className='v4'; sp.style.setProperty('--sp','#FF8C00'); sp.style.setProperty('--spc','rgba(255,140,0,.3)');
+  remplirV4(e.type==='appel' ? '☎ appel de '+e.nom : '✉ sms de '+e.nom, court5(e.nom), e.type==='appel' ? 'appel manqué · touche pour ouvrir' : 'touche pour ouvrir');
+  void sp.offsetWidth; sp.classList.add('on'); B.vibrate();
+  const ouvrir=()=>{ sp.classList.remove('on'); clearInterval(spinIv); sp.onclick=null; const a=APPS.find(x=>x.pkg===e.pkg); if(a) B.launch(a.pkg,a.cls); };
+  sp.onclick=ouvrir;
+  setTimeout(()=>{ sp.classList.remove('on'); clearInterval(spinIv); sp.onclick=null; }, 3600);
+  const d=document.createElement('div'); d.className='ligne-t'; d.style.animationDelay='0s';
+  d.innerHTML='<span class="p">alex@lexos-pro</span><span class="p2">:~$</span> '+(e.type==='appel'?'appel':'sms')+' --de '+e.nom.toLowerCase().replace(/[<>&]/g,'');
+  const corps=document.querySelector('.term .corps'); corps.insertBefore(d, corps.lastElementChild);
+  while (corps.querySelectorAll('.ligne-t').length>4) corps.querySelectorAll('.ligne-t')[1].remove();
+};
 function titreAnime(app){
-  const cfg=TITRES[app.pkg], sp=$('#splash'), t=$('#splashTitre'); t.textContent='';
+  const cfg=titreDe(app), sp=$('#splash'), t=$('#splashTitre'); t.textContent=''; sp.onclick=null; clearInterval(spinIv);
+  if (cfg.cl==='v4') remplirV4('$ exec '+app.pkg, cfg.t, cfg.t==='APPEL' ? 'composition…' : 'chargement…');
+  t.style.fontSize=Math.min(46, Math.floor(window.innerWidth*0.82/cfg.t.length/0.95))+'px';
+  sp.querySelectorAll('.braise').forEach(e=>e.remove());
   sp.style.setProperty('--sp',cfg.c); sp.style.setProperty('--spc',cfg.h); sp.className=cfg.cl;
   const img=sp.querySelector('img'), lx=iconeLexos(app);
   img.src = lx ? 'icones/lexos-'+lx+'.png' : (B.getIcon(app.pkg) || (app.pkg==='com.openai.chatgpt' ? 'icones/lexos-chatgpt.png' : 'icones/lexos-lexos-ia.png'));
-  [...cfg.t].forEach((c,k)=>{ const l=document.createElement('span'); l.textContent=c; l.style.animationDelay=(0.12+k*0.09)+'s, '+(0.8+k*0.1)+'s'; t.appendChild(l); });
+  [...cfg.t].forEach((c,k)=>{ const l=document.createElement('span'); l.textContent=c;
+    l.style.animationDelay = cfg.cl==='term' ? (0.15+k*0.11)+'s' : cfg.cl==='galaxy' ? (0.08+k*0.035)+'s, '+(0.5+k*0.05)+'s' : (0.12+k*0.09)+'s, '+(0.8+k*0.1)+'s'; t.appendChild(l); });
+  if (cfg.cl==='term'){ const c=document.createElement('i'); c.className='cur'; c.style.marginLeft='6px'; t.appendChild(c); }
+  if (cfg.cl==='feu'){ for(let k=0;k<18;k++){ const e=document.createElement('i'); e.className='braise';
+    e.style.left=(10+Math.random()*80)+'%'; e.style.animationDelay=(Math.random()*1.2).toFixed(2)+'s'; e.style.animationDuration=(1+Math.random()*0.9).toFixed(2)+'s';
+    e.style.width=e.style.height=(3+Math.random()*5).toFixed(0)+'px'; sp.appendChild(e); } }
   $('#splashLigne').innerHTML='<span style="color:#E8590C">$</span> exec '+app.pkg;
   void sp.offsetWidth; sp.classList.add('on');
-  setTimeout(()=>{ B.launch(app.pkg, app.cls); }, 1250);
-  setTimeout(()=>{ sp.classList.remove('on'); }, 1900);
+  const duree=cfg.d||1250;
+  setTimeout(()=>{ B.launch(app.pkg, app.cls); }, duree);
+  setTimeout(()=>{ sp.classList.remove('on'); clearInterval(spinIv); }, duree+650);
 }
 function lancer(app, el){
-  if (TITRES[app.pkg] && !calme){ B.vibrate(); titreAnime(app); return; }
+  fermerEdge();
+  if (titreDe(app) && !calme){ B.vibrate(); titreAnime(app); return; }
   B.vibrate();
   if (el) el.classList.add('lance');
   const e=$('#eclair'); e.classList.remove('on'); void e.offsetWidth; e.classList.add('on');
@@ -491,6 +653,89 @@ $('#pages').style.perspective = '900px';
 $('#pages').addEventListener('scroll', ()=>{ if (rafPages) return; rafPages = requestAnimationFrame(()=>{ rafPages=null; majPages(); }); }, {passive:true});
 window.addEventListener('resize', ()=>rendrePages());
 
+/* ===== composeur LexOS : 3 caractères chinois, puis le vrai chiffre ===== */
+let numero='';
+function animerHan(sp, c, delai){
+  clearInterval(sp._iv); clearTimeout(sp._to);
+  if (calme){ sp.className='chiffre'; sp.textContent=c; return; }
+  sp._to=setTimeout(()=>{ let k=0;
+    const tour=()=>{ if(k<3){ sp.className='chiffre'; void sp.offsetWidth; sp.className='chiffre han'; sp.textContent=HAN[Math.floor(Math.random()*HAN.length)]; k++; }
+      else { clearInterval(sp._iv); sp.className='chiffre'; void sp.offsetWidth; sp.textContent=c; sp.className='chiffre tombe'; } };
+    tour(); sp._iv=setInterval(tour,150); }, delai||0);
+}
+function rendreNumero(nouveau){
+  const el=$('#numero');
+  // groupes à la québécoise : 418 555 1234 (espace visuel, pas dans le numéro)
+  const enfants=[...el.querySelectorAll('.chiffre')];
+  if (enfants.length>numero.length){ el.innerHTML=''; [...numero].forEach((c,i)=>{ ajouterChiffre(c,i,false); }); return; }
+  if (nouveau) ajouterChiffre(numero[numero.length-1], numero.length-1, true);
+}
+function ajouterChiffre(c,i,anim){
+  const el=$('#numero');
+  if (/^[0-9]+$/.test(numero) && (i===3||i===6) && numero.length<=10){ const g=document.createElement('span'); g.className='groupe'; el.appendChild(g); }
+  const sp=document.createElement('span'); sp.className='chiffre'; el.appendChild(sp);
+  if (anim) animerHan(sp,c,0); else sp.textContent=c;
+}
+(function(){
+  const pave=$('#pave');
+  [['1',''],['2','ABC'],['3','DEF'],['4','GHI'],['5','JKL'],['6','MNO'],['7','PQRS'],['8','TUV'],['9','WXYZ'],['*',''],['0','+'],['#','']].forEach(([n,l])=>{
+    const b=document.createElement('button'); b.type='button'; b.innerHTML=n+'<small>'+(l||'&nbsp;')+'</small>'; b.setAttribute('aria-label',n);
+    let tLong=null;
+    b.addEventListener('pointerdown',()=>{ if(n==='0') tLong=setTimeout(()=>{ tLong='fait'; if(numero.length<15){ numero+='+'; rendreNumero(true); B.vibrate(); } },500); });
+    b.addEventListener('click',()=>{ if(tLong==='fait'){ tLong=null; return; } clearTimeout(tLong); tLong=null;
+      if (numero.length>=15) return; numero+=n; B.vibrate(); rendreNumero(true);
+      b.classList.add('tape'); setTimeout(()=>b.classList.remove('tape'),150); });
+    pave.appendChild(b);
+  });
+})();
+function ouvrirComposeur(){ numero=''; $('#numero').innerHTML=''; $('#composeur').classList.add('ouvert'); B.vibrate(); }
+function fermerComposeur(){ $('#composeur').classList.remove('ouvert'); }
+$('#ouvrirComposeur').onclick=ouvrirComposeur;
+$('#composeurFermer').onclick=fermerComposeur;
+let tEff=null;
+$('#composeurEffacer').addEventListener('pointerdown',()=>{ tEff=setTimeout(()=>{ numero=''; $('#numero').innerHTML=''; tEff='fait'; B.vibrate(); },550); });
+$('#composeurEffacer').addEventListener('click',()=>{ if(tEff==='fait'){ tEff=null; return; } clearTimeout(tEff); tEff=null; numero=numero.slice(0,-1); rendreNumero(false); B.vibrate(); });
+$('#appelBtn').onclick=()=>{
+  if (!numero){ toast('<span style="color:#E8590C">$</span> tape un numéro'); return; }
+  const num=numero, sp=$('#splash'); sp.className='v4'; sp.onclick=null;
+  remplirV4('☎ appel --numero '+num, num.replace(/[^0-9+-]/g,'').slice(-10), 'composition…');
+  void sp.offsetWidth; sp.classList.add('on'); B.vibrate();
+  setTimeout(()=>{ B.appeler(num); }, 1300);
+  setTimeout(()=>{ sp.classList.remove('on'); clearInterval(spinIv); fermerComposeur(); }, 2000);
+};
+
+/* ===== panneau latéral ===== */
+let edge = lire('lexos.edge', null);
+function rendreEdge(){
+  const parPkg=Object.fromEntries(APPS.map(a=>[a.pkg,a]));
+  if (!edge){ edge=['com.anthropic.claude','com.openai.chatgpt','com.termux','com.offsec.nethunter','com.sec.android.app.camera','com.android.settings'].filter(p=>parPkg[p]); }
+  const l=$('#edgeListe'); l.innerHTML='';
+  const liste=edge.map(p=>parPkg[p]).filter(Boolean);
+  liste.forEach((a,i)=>{ const t=tuile(a,i,0); t.style.animationDelay=(0.05+i*0.05)+'s'; l.appendChild(t); });
+  if (!liste.length){ const v=document.createElement('div'); v.className='vide'; v.textContent='aucune appli — touche +'; l.appendChild(v); }
+  $('#edgeNb').textContent=liste.length+'/10';
+}
+function ouvrirEdge(){ rendreEdge(); $('#edge').classList.add('ouvert'); $('#voile').classList.add('on'); B.vibrate(); }
+function fermerEdge(){ $('#edge').classList.remove('ouvert'); if(!$('#menu').classList.contains('ouvert')) $('#voile').classList.remove('on'); }
+$('#poignee').onclick=ouvrirEdge;
+let pxEdge=null;
+$('#poignee').addEventListener('touchstart',e=>{ pxEdge=e.touches[0].clientX; },{passive:true});
+$('#poignee').addEventListener('touchmove',e=>{ if(pxEdge!==null && pxEdge-e.touches[0].clientX>25){ pxEdge=null; ouvrirEdge(); } },{passive:true});
+let choixTmp=[];
+function rendreChoix(){
+  const g=$('#choixGrille'); g.innerHTML='';
+  APPS.forEach((a,i)=>{ const t=tuile(a,i,0); t.style.animation='none'; t.style.opacity='1';
+    t.classList.toggle('pris', choixTmp.includes(a.pkg));
+    t.addEventListener('click',ev=>{ ev.stopImmediatePropagation(); B.vibrate();
+      if (choixTmp.includes(a.pkg)) choixTmp=choixTmp.filter(p=>p!==a.pkg);
+      else if (choixTmp.length<10) choixTmp.push(a.pkg); else toast('<span style="color:#E8590C">[ MAX ]</span> 10 applis');
+      t.classList.toggle('pris', choixTmp.includes(a.pkg)); $('#choixNb').textContent=choixTmp.length+'/10'; }, true);
+    g.appendChild(t); });
+  $('#choixNb').textContent=choixTmp.length+'/10';
+}
+$('#edgePlus').onclick=()=>{ choixTmp=[...edge]; fermerEdge(); $('#choix').classList.add('ouvert'); rendreChoix(); };
+$('#choixOk').onclick=()=>{ edge=choixTmp; ecrire('lexos.edge',edge); $('#choix').classList.remove('ouvert'); ouvrirEdge(); toast('<span style="color:#E8590C">[ OK ]</span> panneau mis à jour'); };
+
 /* ===== tiroir ===== */
 function rendreFiltres(){
   const f=$('#filtres'); f.innerHTML='';
@@ -502,7 +747,7 @@ function rendreFiltres(){
 function rendreTiroir(){
   const q=$('#grep').value.trim().toLowerCase();
   let liste=APPS.filter(a=>!q||a.label.toLowerCase().includes(q)||a.pkg.includes(q));
-  if (filtre!=='tout') liste=liste.filter(a=>CATS[filtre].includes(iconeLexos(a)) || (filtre==='ia' && TITRES[a.pkg]));
+  if (filtre!=='tout') liste=liste.filter(a=>CATS[filtre].includes(iconeLexos(a)) || (filtre==='ia' && titreDe(a) && a.pkg==='com.openai.chatgpt'));
   const g=$('#grilleToutes'); g.innerHTML='';
   liste.forEach((a,i)=>g.appendChild(tuile(a,i,.05)));
   $('#compte').innerHTML=liste.length+' application'+(liste.length>1?'s':'')+' · <span style="color:#E8590C">lexos-pro</span>';
@@ -513,17 +758,37 @@ function fermerTiroir(){ $('#tiroir').classList.remove('ouvert'); $('#accueil').
 /* ===== menu ===== */
 function ouvrirMenu(app){
   cible=app;
-  $('#mFav').style.display=$('#mInfo').style.display=app?'block':'none';
+  $('#mFav').style.display=$('#mInfo').style.display=$('#mEdge').style.display=app?'block':'none';
+  if (app) $('#mEdge').textContent=(edge&&edge.includes(app.pkg)?'⇥ retirer du panneau latéral':'⇤ ajouter au panneau latéral');
   if (app) $('#mFav').textContent=(favoris.includes(app.pkg)?'★ retirer de l\'accueil':'☆ épingler à l\'accueil')+' — '+app.label.toLowerCase();
   $('#mAnim').textContent='≈ animations : '+(calme?'off':'on');
+  $('#mNoms').style.display=$('#mClavier').style.display=$('#mVerrou').style.display=app?'none':'block'; if(!app) majMenuEtat();
   $('#menu').classList.add('ouvert'); $('#voile').classList.add('on');
 }
 function fermerMenu(){ $('#menu').classList.remove('ouvert'); $('#voile').classList.remove('on'); }
-$('#voile').onclick=fermerMenu;
+$('#voile').onclick=()=>{ fermerMenu(); fermerEdge(); };
 $('#mFav').onclick=()=>{ if(!cible) return;
   if (favoris.includes(cible.pkg)) favoris=favoris.filter(p=>p!==cible.pkg);
   else { favoris.push(cible.pkg); if(favoris.length>NB_FAV) favoris.shift(); }
   ecrire('lexos.favoris',favoris); rendreAccueil(); fermerMenu(); toast('<span style="color:#E8590C">[ OK ]</span> accueil mis à jour'); };
+$('#mEdge').onclick=()=>{ if(!cible) return; edge=edge||[];
+  if (edge.includes(cible.pkg)) edge=edge.filter(p=>p!==cible.pkg); else { if(edge.length>=10) edge.shift(); edge.push(cible.pkg); }
+  ecrire('lexos.edge',edge); fermerMenu(); toast('<span style="color:#E8590C">[ OK ]</span> panneau latéral mis à jour'); };
+function etat(){ try { return JSON.parse(B.etat()); } catch(e){ return {notifs:false,bannieres:false,clavier:false}; } }
+function majMenuEtat(){ const e=etat();
+  $('#mNoms').textContent='✉ noms animés sms / appels : '+(e.notifs&&e.bannieres?'on — essayer':!e.notifs?'activer (1/2 notifications)':'activer (2/2 bannières)');
+  $('#mClavier').textContent='⌨ clavier LexOS PRO : '+(e.clavier?'choisir':'activer');
+  $('#mVerrou').textContent='🔒 verrouillage LexOS : '+(!e.bannieres?'activer':e.verrou?'on — essayer':'off — activer'); }
+$('#mNoms').onclick=()=>{ const e=etat(); fermerMenu();
+  if (!e.notifs){ toast('autorise <b style="color:#E8590C">LexOS PRO</b> dans « Accès aux notifications »'); setTimeout(()=>B.activerNotifs(),600); }
+  else if (!e.bannieres){ toast('autorise <b style="color:#E8590C">LexOS PRO</b> à s\'afficher par-dessus'); setTimeout(()=>B.activerBannieres(),600); }
+  else { B.testBanniere('sms','Alex'); window.lexosEvenement({type:'sms',nom:'Alex',pkg:''}); } };
+$('#mVerrou').onclick=()=>{ const e=etat(); fermerMenu();
+  if (!e.bannieres){ toast('autorise <b style="color:#E8590C">LexOS PRO</b> à s\'afficher par-dessus'); setTimeout(()=>B.activerBannieres(),600); return; }
+  if (!e.verrou){ B.setVerrou(true); toast('<span style="color:#E8590C">[ OK ]</span> verrouillage LexOS activé'); }
+  B.essaiVerrou(); };
+$('#mVerrou').addEventListener('contextmenu',ev=>ev.preventDefault());
+$('#mClavier').onclick=()=>{ const e=etat(); fermerMenu(); if (e.clavier) B.choisirClavier(); else { toast('active <b style="color:#E8590C">Clavier LexOS PRO</b>'); setTimeout(()=>B.activerClavier(),600); } };
 $('#mInfo').onclick=()=>{ if(cible) B.appInfo(cible.pkg); fermerMenu(); };
 /* ===== photo du widget et image de fond choisies par l'utilisateur ===== */
 function appliquerImages(){
@@ -559,7 +824,7 @@ appliquerImages();
 // toucher la photo du widget = la changer
 $('#photo').addEventListener('click',()=>choisirImage('lexos.photo'));
 $('#mReg').onclick=()=>{ B.openSettings(); fermerMenu(); };
-$('#mAnim').onclick=()=>{ calme=!calme; ecrire('lexos.calme',calme); document.body.classList.toggle('calme',calme); majPages(); $('#fond').style.transform=''; $('#mAnim').textContent='≈ animations : '+(calme?'off':'on'); };
+$('#mAnim').onclick=()=>{ calme=!calme; ecrire('lexos.calme',calme); try{ B.setCalme(calme); }catch(e){} document.body.classList.toggle('calme',calme); majPages(); $('#fond').style.transform=''; $('#mAnim').textContent='≈ animations : '+(calme?'off':'on'); };
 document.body.classList.toggle('calme',calme);
 
 /* ===== recherche ===== */
@@ -590,15 +855,15 @@ $('#accueil').addEventListener('pointerdown',e=>{ if(e.target.closest('button,in
 ['pointerup','pointermove','pointercancel'].forEach(ev=>$('#accueil').addEventListener(ev,()=>clearTimeout(fondAppui)));
 
 /* ===== appels depuis Android ===== */
-window.lexosBack=()=>{ if($('#menu').classList.contains('ouvert')) fermerMenu(); else if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
-window.lexosHome=()=>{ fermerMenu(); if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
+window.lexosBack=()=>{ if($('#composeur').classList.contains('ouvert')) fermerComposeur(); else if($('#choix').classList.contains('ouvert')) $('#choix').classList.remove('ouvert'); else if($('#edge').classList.contains('ouvert')) fermerEdge(); else if($('#menu').classList.contains('ouvert')) fermerMenu(); else if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
+window.lexosHome=()=>{ fermerMenu(); fermerEdge(); fermerComposeur(); $('#choix').classList.remove('ouvert'); if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
 window.lexosResume=()=>{ tic(true); };
 window.lexosRefresh=()=>{ charger(); };
 
 function charger(){
   try { APPS=JSON.parse(B.getApps()); } catch(e){ APPS=[]; }
   APPS.sort((a,b)=>a.label.localeCompare(b.label,'fr'));
-  rendreAccueil(); rendrePages(); rendreFiltres(); if($('#tiroir').classList.contains('ouvert')) rendreTiroir();
+  rendreAccueil(); rendrePages(); rendreFiltres(); if($('#edge').classList.contains('ouvert')) rendreEdge(); if($('#tiroir').classList.contains('ouvert')) rendreTiroir();
 }
 charger();
 
