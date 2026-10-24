@@ -128,8 +128,8 @@ button{font-family:inherit}
 const V = window.Verrou || {
   deverrouiller(){ console.log('unlock'); }, lampe(on){ return on; }, camera(){}, battery:()=>78, vibrate(){}, calme:()=>false,
   evenement:()=>'null',
-  agenda:()=>JSON.stringify([{titre:'[ÉVÉNEMENT]',debut:Date.now()+3*3600e3,jour:false},{titre:'[AUTRE ÉVÉNEMENT]',debut:Date.now()+26*3600e3,jour:true}]),
-  notifications:()=>JSON.stringify([{app:'Messages',titre:'[CONTACT]',texte:'[MESSAGE]',t:Date.now()-60e3},{app:'Gmail',titre:'[EXPÉDITEUR]',texte:'[SUJET]',t:Date.now()-900e3},{app:'Termux',titre:'lexos-update',texte:'[ OK ] terminé',t:Date.now()-3600e3}])
+  agenda:()=>JSON.stringify([{titre:'Souper en famille',debut:Date.now()+3*3600e3,jour:false},{titre:'Réunion ti-lex',debut:Date.now()+26*3600e3,jour:false}]),
+  notifications:()=>JSON.stringify([{app:'Messages',titre:'Marie-Ève',texte:'On se voit ce soir?',t:Date.now()-60e3},{app:'GitHub',titre:'APK Lanceur LexOS PRO',texte:'Compilation réussie',t:Date.now()-900e3},{app:'Termux',titre:'lexos-update',texte:'[ OK ] terminé',t:Date.now()-3600e3}])
 };
 const $ = s => document.querySelector(s);
 const lire = (k,d) => { try { const v=localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } };
