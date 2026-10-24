@@ -247,6 +247,35 @@ img{-webkit-user-drag:none}
 .lxr.aucun .barres i{background:#FF3B30;opacity:.35}
 .lxr.aucun .type{color:#FF6B6B;animation:lx-glitch .5s steps(2) infinite}
 
+/* ---------- page Santé de l'appareil ---------- */
+#sante{position:fixed;inset:0;z-index:43;background:#000;padding:var(--haut) 0 var(--bas);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+#sante.ouvert{transform:none}
+#santeCorps{flex:1;overflow-y:auto;padding:4px 16px 30px;scrollbar-width:none}
+#santeCorps::-webkit-scrollbar{display:none}
+.score{display:flex;align-items:center;gap:16px;padding:16px;border-radius:18px;background:var(--mat1);box-shadow:inset 0 0 0 1px var(--orange),0 0 24px rgba(232,89,12,.18);margin-top:6px}
+.anneau{position:relative;width:120px;height:120px;flex:0 0 120px}
+.anneau svg{transform:rotate(-90deg)}
+.anneau circle{fill:none;stroke-width:10}
+.anneau .fond-a{stroke:#1F1F1F}
+.anneau .val-a{stroke:var(--orange);stroke-linecap:round;filter:drop-shadow(0 0 6px var(--orange));transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.anneau .txt-a{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.anneau .txt-a b{font-family:Orbitron;font-weight:900;font-size:30px;color:#fff;line-height:1}
+.anneau .txt-a span{font-size:10px;color:var(--gris);margin-top:3px}
+.score .verdict{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--gris)}
+.score .verdict b{font-size:15px}
+.sbloc{margin-top:16px}
+.sbloc h2{margin:0 0 8px;font-size:11px;font-weight:700;color:var(--orange);letter-spacing:.06em}
+.scarte{padding:14px;border-radius:16px;background:var(--mat1);box-shadow:inset 0 0 0 1px var(--ligne);display:flex;flex-direction:column;gap:10px}
+.jauge{display:flex;gap:3px}
+.jauge i{flex:1;height:14px;border-radius:3px;background:#1F1F1F;transition:background-color .3s,box-shadow .3s}
+.jauge i.on{background:var(--orange);box-shadow:0 0 6px rgba(232,89,12,.7)}
+.jauge.lime i.on{background:#A6FF00;box-shadow:0 0 6px rgba(166,255,0,.6)}
+.jauge.rouge i.on{background:#FF3B30;box-shadow:0 0 6px rgba(255,59,48,.7)}
+.sligne{display:flex;justify-content:space-between;gap:12px;font-size:12.5px}
+.sligne span{color:var(--gris)}
+.sligne b{color:var(--blanc);text-align:right}
+.ok{color:#A6FF00!important}.attention{color:#FFC53D!important}.mal{color:#FF6B6B!important}
+
 /* ---------- page Paramètres ---------- */
 #param{position:fixed;inset:0;z-index:39;background:#000;padding:var(--haut) 0 var(--bas);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
 #param.ouvert{transform:none}
@@ -408,6 +437,13 @@ img{-webkit-user-drag:none}
     <button id="appelBtn" aria-label="Appeler"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z" fill="#fff"/></svg></button>
     <button class="rond" id="composeurEffacer" aria-label="Effacer">⌫</button>
   </div>
+</section>
+<section id="sante" aria-label="Santé de l'appareil">
+  <div class="tete" style="padding:0 16px 10px;display:flex;flex-direction:column;gap:2px">
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><span class="p">alex@lexos-pro</span><span class="p2">:~$</span> lexos-sante --scan</span><button class="fermer" id="santeFermer" aria-label="Fermer" style="width:40px;height:40px;border-radius:12px;border:1px solid var(--ligne);background:var(--mat1);color:var(--gris);font-size:16px;cursor:pointer">✕</button></div>
+    <h1 style="margin:2px 0 0;font-family:Orbitron;font-weight:700;font-size:24px;color:#fff">Santé de l'appareil</h1>
+  </div>
+  <div id="santeCorps"></div>
 </section>
 <section id="param" aria-label="Paramètres LexOS PRO">
   <div class="tete">
@@ -793,6 +829,65 @@ function lxIndicateurs(P){
   return {bat, res};
 }
 
+/* ===== page Santé de l'appareil ===== */
+function go(o){ return (o/1073741824).toFixed(o<10737418240?1:0)+' Go'; }
+function duree(sec){ const j=Math.floor(sec/86400), h=Math.floor(sec%86400/3600), m=Math.floor(sec%3600/60); return (j?j+' j ':'')+h+' h '+m+' min'; }
+function jauge(pct, n, coul){ let h='<div class="jauge '+(coul||'')+'">'; const on=Math.round(pct/100*n); for(let i=0;i<n;i++) h+='<i data-on="'+(i<on?1:0)+'" style="transition-delay:'+(i*0.03).toFixed(2)+'s"></i>'; return h+'</div>'; }
+function ligne(nom,val,cl){ return '<div class="sligne"><span>'+nom+'</span><b class="'+(cl||'')+'">'+val+'</b></div>'; }
+function lireSante(){
+  try { return JSON.parse(B.sante()); } catch(e){
+    return {batterie:{niveau:78,sante:'bonne',temp:31.4,tension:4.21,techno:'Li-ion',source:'chargeur',charge:true,cycles:212},
+      stockage:{total:256e9,libre:142e9},memoire:{total:8e9,libre:3.1e9,faible:false},
+      systeme:{modele:'Samsung SM-A556W',android:'16',coeurs:8,allume:183600,chaleur:'normale'}};
+  }
+}
+function scoreSante(d){
+  let sc=100; const b=d.batterie||{}, st=d.stockage||{}, m=d.memoire||{}, sy=d.systeme||{};
+  if (b.sante && b.sante!=='bonne' && b.sante!=='inconnue') sc-=30;
+  if (b.temp>42) sc-=20; else if (b.temp>37) sc-=8;
+  if (b.cycles>800) sc-=15; else if (b.cycles>500) sc-=7;
+  const libreSt = st.total ? st.libre/st.total*100 : 50; if (libreSt<10) sc-=20; else if (libreSt<20) sc-=8;
+  if (m.faible) sc-=10;
+  if (['chaude','très chaude','critique'].includes(sy.chaleur)) sc-=15;
+  return Math.max(0, Math.min(100, Math.round(sc)));
+}
+function rendreSante(){
+  const d=lireSante(), b=d.batterie||{}, st=d.stockage||{}, m=d.memoire||{}, sy=d.systeme||{};
+  const sc=scoreSante(d), verdict = sc>=85?['excellente','ok']:sc>=65?['correcte','attention']:['à surveiller','mal'];
+  const utilSt = st.total ? Math.round((st.total-st.libre)/st.total*100) : 0;
+  const utilM = m.total ? Math.round((m.total-m.libre)/m.total*100) : 0;
+  const clTemp = b.temp>42?'mal':b.temp>37?'attention':'ok';
+  const clSante = b.sante==='bonne'?'ok':b.sante==='inconnue'?'':'mal';
+  const C=2*Math.PI*52;
+  $('#santeCorps').innerHTML=
+   '<div class="score"><div class="anneau"><svg width="120" height="120" viewBox="0 0 120 120"><circle class="fond-a" cx="60" cy="60" r="52"/><circle class="val-a" id="anneauVal" cx="60" cy="60" r="52" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+C.toFixed(1)+'"/></svg><div class="txt-a"><b id="scoreNb">0</b><span>/ 100</span></div></div>'+
+   '<div class="verdict"><span>$ lexos-sante --score</span><b class="'+verdict[1]+'">santé '+verdict[0]+'</b><span>'+(sy.modele||'')+' · Android '+(sy.android||'?')+'</span></div></div>'+
+   '<div class="sbloc"><h2>BATTERIE</h2><div class="scarte">'+jauge(b.niveau, 20, b.niveau<=20?'rouge':(b.charge?'lime':''))+
+     ligne('niveau',b.niveau+' %'+(b.charge?' ⚡ en charge':''))+ligne('état de santé',b.sante||'?',clSante)+
+     ligne('température',(b.temp||0).toFixed(1)+' °C',clTemp)+ligne('tension',(b.tension||0).toFixed(2)+' V')+
+     ligne('source',b.source||'?')+ligne('technologie',b.techno||'?')+(b.cycles>=0?ligne('cycles de charge',b.cycles,b.cycles>800?'mal':b.cycles>500?'attention':'ok'):'')+'</div></div>'+
+   '<div class="sbloc"><h2>STOCKAGE</h2><div class="scarte">'+jauge(utilSt, 20, utilSt>90?'rouge':'')+
+     ligne('utilisé',utilSt+' %',utilSt>90?'mal':utilSt>80?'attention':'ok')+ligne('libre',go(st.libre||0))+ligne('total',go(st.total||0))+'</div></div>'+
+   '<div class="sbloc"><h2>MÉMOIRE VIVE (RAM)</h2><div class="scarte">'+jauge(utilM, 20, m.faible?'rouge':'')+
+     ligne('utilisée',utilM+' %',m.faible?'mal':'ok')+ligne('libre',go(m.libre||0))+ligne('total',go(m.total||0))+'</div></div>'+
+   '<div class="sbloc"><h2>SYSTÈME</h2><div class="scarte">'+
+     ligne('chaleur du téléphone',sy.chaleur||'?',sy.chaleur==='normale'?'ok':sy.chaleur==='tiède'?'attention':'mal')+
+     ligne('processeur',(sy.coeurs||'?')+' cœurs')+ligne('allumé depuis',duree(sy.allume||0))+ligne('modèle',sy.modele||'?')+'</div></div>'+
+   '<div class="signature">scan terminé <b>[ OK ]</b> · LexOS PRO</div>';
+  // animations : anneau, compteur, jauges qui se remplissent
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
+    $('#anneauVal').style.stroke = sc>=85?'#A6FF00':sc>=65?'var(--orange)':'#FF3B30';
+    $('#anneauVal').style.strokeDashoffset=(C*(1-sc/100)).toFixed(1);
+    document.querySelectorAll('#santeCorps .jauge i').forEach(i=>{ if(i.dataset.on==='1') i.classList.add('on'); });
+    let k=0; const iv=setInterval(()=>{ k=Math.min(sc,k+Math.ceil(sc/30)); $('#scoreNb').textContent=k; if(k>=sc) clearInterval(iv); },30);
+  }); });
+}
+function ouvrirSante(){ rendreSante(); $('#sante').classList.add('ouvert'); B.vibrate(); }
+function fermerSante(){ $('#sante').classList.remove('ouvert'); }
+$('#santeFermer').onclick=fermerSante;
+// toucher la batterie dans le widget ouvre la santé
+document.addEventListener('click',e=>{ if(e.target.closest('#batt')) ouvrirSante(); });
+
 /* ===== page Paramètres LexOS PRO ===== */
 function etiquette(on, txtOn, txtOff){ return '<i class="etiq '+(on?'on':'off')+'">'+(on?(txtOn||'on'):(txtOff||'off'))+'</i>'; }
 function sectionsParam(){
@@ -825,6 +920,7 @@ function sectionsParam(){
       {i:'⇤', t:'Panneau latéral', s:nbEdge+'/10 applis', a:()=>{ fermerParam(); $('#edgePlus').click(); }}
     ]},
     {t:'SYSTÈME', l:[
+      {i:'♥', t:'Santé de l\'appareil', s:'batterie, stockage, mémoire, chaleur', a:()=>{ ouvrirSante(); }},
       {i:'⚙', t:'Réglages Android', s:'Wi-Fi, son, écran, batterie…', a:()=>B.openSettings()},
       {i:'⌂', t:'Appli d\'accueil par défaut', s:'garder LexOS PRO ou revenir à One UI', a:()=>{ try{ B.appliAccueil(); }catch(err){ B.openSettings(); } }}
     ]}
@@ -1016,8 +1112,8 @@ $('#accueil').addEventListener('pointerdown',e=>{ if(e.target.closest('button,in
 ['pointerup','pointermove','pointercancel'].forEach(ev=>$('#accueil').addEventListener(ev,()=>clearTimeout(fondAppui)));
 
 /* ===== appels depuis Android ===== */
-window.lexosBack=()=>{ if($('#composeur').classList.contains('ouvert')) fermerComposeur(); else if(document.querySelector('#villeSheet.ouvert')){ $('#villeSheet').classList.remove('ouvert'); $('#voile').classList.remove('on'); } else if($('#param').classList.contains('ouvert')) fermerParam(); else if($('#choix').classList.contains('ouvert')) $('#choix').classList.remove('ouvert'); else if($('#edge').classList.contains('ouvert')) fermerEdge(); else if($('#menu').classList.contains('ouvert')) fermerMenu(); else if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
-window.lexosHome=()=>{ fermerParam(); fermerMenu(); fermerEdge(); fermerComposeur(); $('#choix').classList.remove('ouvert'); if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
+window.lexosBack=()=>{ if($('#sante').classList.contains('ouvert')) fermerSante(); else if($('#composeur').classList.contains('ouvert')) fermerComposeur(); else if(document.querySelector('#villeSheet.ouvert')){ $('#villeSheet').classList.remove('ouvert'); $('#voile').classList.remove('on'); } else if($('#param').classList.contains('ouvert')) fermerParam(); else if($('#choix').classList.contains('ouvert')) $('#choix').classList.remove('ouvert'); else if($('#edge').classList.contains('ouvert')) fermerEdge(); else if($('#menu').classList.contains('ouvert')) fermerMenu(); else if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
+window.lexosHome=()=>{ fermerSante(); fermerParam(); fermerMenu(); fermerEdge(); fermerComposeur(); $('#choix').classList.remove('ouvert'); if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
 window.lexosResume=()=>{ tic(true); if($('#param').classList.contains('ouvert')) rendreParam(); };
 window.lexosRefresh=()=>{ charger(); };
 

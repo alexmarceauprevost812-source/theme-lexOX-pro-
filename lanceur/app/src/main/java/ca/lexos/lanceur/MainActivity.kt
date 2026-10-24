@@ -340,6 +340,9 @@ class MainActivity : Activity() {
         fun reseau(): String = EtatSysteme.reseau(this@MainActivity)
 
         @JavascriptInterface
+        fun sante(): String = EtatSysteme.sante(this@MainActivity)
+
+        @JavascriptInterface
         fun version(): String = try {
             packageManager.getPackageInfo(packageName, 0).versionName ?: "?"
         } catch (e: Exception) { "?" }
