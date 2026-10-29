@@ -1,0 +1,85 @@
+# Construit l'édition LexOS Démon (même code que PRO + couleur démon par défaut + fond animé).
+# Se lance tout seul quand lanceur/ change, ou à la main :
+#   onglet « Actions » → « APK Lanceur LexOS PRO » → « Run workflow ».
+# ~5-8 min plus tard : lien direct dans « Releases » → lanceur-lexos-pro.
+name: APK LexOS Démon (tout-en-un)
+
+on:
+  push:
+    paths:
+      - 'lanceur/**'
+      - '.github/workflows/apk-demon.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: lanceur
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Préparer l'édition Démon
+        run: python3 demon/preparer.py
+
+      # Clé de signature d'Alex Marceau Prevost (Settings → Secrets → Actions).
+      - name: Clé de signature
+        env:
+          B64: ${{ secrets.LEXOS_KEYSTORE_B64 }}
+          PASS: ${{ secrets.LEXOS_KEYSTORE_PASS }}
+        run: |
+          if [ -n "$B64" ]; then
+            echo "$B64" | base64 -d > "$RUNNER_TEMP/lexos.jks"
+            echo "LEXOS_KEYSTORE_PATH=$RUNNER_TEMP/lexos.jks" >> "$GITHUB_ENV"
+            echo "Signature : clé d'Alex Marceau Prevost"
+            T=$(wc -c < "$RUNNER_TEMP/lexos.jks"); L=${#B64}
+            if keytool -list -keystore "$RUNNER_TEMP/lexos.jks" -storepass "$PASS" -alias lexos >/dev/null 2>"$RUNNER_TEMP/k.err"; then
+              echo "::notice::Clé OK ($T octets, secret B64 de $L caractères)"
+            else
+              echo "::error::Clé refusée ($T octets, secret B64 de $L caractères, mot de passe de ${#PASS} caractères) : $(head -c 200 "$RUNNER_TEMP/k.err" | tr '\n' ' ')"
+            fi
+          else
+            echo "Signature : ancienne clé (ajoute les secrets LEXOS_KEYSTORE_B64 et LEXOS_KEYSTORE_PASS)"
+          fi
+
+      - name: Compiler l'APK
+        env:
+          LEXOS_KEYSTORE_PASS: ${{ secrets.LEXOS_KEYSTORE_PASS }}
+        run: gradle assembleRelease --no-daemon
+
+      - name: Vérifier la signature
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          $APKSIGNER verify --print-certs app/build/outputs/apk/release/app-release.apk | grep -i "certificate DN" || true
+
+      - name: Renommer
+        run: cp app/build/outputs/apk/release/app-release.apk LexOS-Demon.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LexOS-Demon-apk
+          path: lanceur/LexOS-Demon.apk
+
+      - name: Publier un lien direct (Release publique)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create lexos-demon LexOS-Demon.apk \
+            --title "LexOS Démon — APK tout-en-un (dernière version)" \
+            --notes "LexOS Démon : le lanceur LexOS PRO complet en couleur démon (yeux rouges, moteur démon, verrouillage, fond d'écran animé). Télécharge LexOS-Demon.apk et installe-le." \
+            --latest=false 2>/dev/null \
+          || gh release upload lexos-demon LexOS-Demon.apk --clobber
