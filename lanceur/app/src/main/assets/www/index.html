@@ -1494,6 +1494,15 @@ html.demon #demonYeux{display:flex}
 #demonSurgit p{margin:0;color:#E0262B;font:12px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase}
 #demonSurgit.on{animation:dmSurgit 1.1s ease-out}
 #demonSurgit.on .dm-pau{animation:dmOuvre 1.1s ease-out}
+/* moteur d'animation des applis en mode démon : les yeux remplacent l'icône */
+#moteur .dmYeux{position:absolute;left:0;right:0;top:calc(56% - 170px);display:none;justify-content:center;gap:40px;filter:drop-shadow(0 0 26px rgba(224,38,43,.95));transition:transform .45s cubic-bezier(.2,.9,.25,1.1),opacity .3s}
+html.demon #moteur .dmYeux{display:flex}
+html.demon #moteurIco{opacity:0!important}
+#moteur .dmYeux .oe{width:110px;height:57px}
+#moteur.on .dmYeux .dm-pau{animation:dmOuvre 1s ease-out forwards}
+#moteur.nom .dmYeux{transform:scale(1.15)}
+#moteur.dezoom .dmYeux{transform:scale(2.6);opacity:0}
+html.demon #moteurNom{text-shadow:0 0 14px #E0262B,0 0 36px #E0262B}
 @keyframes dmCligne{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
 @keyframes dmTremble{50%{translate:2px -1px}}
 @keyframes dmSurgit{0%{opacity:0}15%,70%{opacity:1}100%{opacity:0}}
@@ -1515,14 +1524,22 @@ html.demon #demonYeux{display:flex}
     yeux.style.transform='translate('+dx*10+'px,'+dy*6+'px)'; });
   yeux.addEventListener('click',()=>{ yeux.classList.remove('colere'); void yeux.offsetWidth; yeux.classList.add('colere'); vib(); setTimeout(()=>yeux.classList.remove('colere'),1400); });
   function surgir(txt){ const s=document.getElementById('demonSurgit'); document.getElementById('demonTxt').textContent=txt||''; s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); vib(); }
-  // Le démon surgit avant chaque ouverture d'appli (SMS compris)
+  // Moteur d'animation : en mode démon, les yeux s'ouvrent au centre à la place de l'icône
+  const m=document.getElementById('moteur');
+  if(m){ const y=document.createElement('div'); y.className='dmYeux'; y.innerHTML=PAIRE; m.appendChild(y); }
   const lancerOrigine=window.lancer;
   if(typeof lancerOrigine==='function'){
     window.lancer=function(app, el){
       if(!actif()) return lancerOrigine(app, el);
       const sms=/messaging/.test(app.pkg||'');
-      surgir(sms ? "le démon lit tes messages" : (app.nom||app.label||app.n||''));
-      setTimeout(()=>lancerOrigine(app, el), 650);
+      let modeCalme=false; try{ modeCalme=calme; }catch(e){}
+      if(modeCalme){ // sans moteur : le démon surgit seul
+        surgir(sms ? "le démon lit tes messages" : (app.label||''));
+        return setTimeout(()=>lancerOrigine(app, el), 650);
+      }
+      lancerOrigine(app, el);
+      const l=document.getElementById('moteurLigne');
+      if(l) l.textContent = sms ? '⛧ le démon lit tes messages' : '⛧ invocation : '+(app.pkg||'');
     };
   }
   window.lexosDemon={surgir, maj(){}};
