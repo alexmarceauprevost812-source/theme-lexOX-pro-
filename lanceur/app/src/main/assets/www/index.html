@@ -440,7 +440,8 @@ const COULEURS={
   cyan:{n:'cyan',acc:'#22D3EE',rgb:'34,211,238',acc2:'#7DE8F7',btn:'#0E7490',h:188},
   violet:{n:'violet',acc:'#B46BFF',rgb:'180,107,255',acc2:'#D0A5FF',btn:'#6D28D9',h:270},
   rose:{n:'rose',acc:'#FF2BD6',rgb:'255,43,214',acc2:'#FF7FE6',btn:'#A21CAF',h:312},
-  blanc:{n:'blanc',acc:'#EDEDED',rgb:'237,237,237',acc2:'#FFFFFF',btn:'#555555',h:null}
+  blanc:{n:'blanc',acc:'#EDEDED',rgb:'237,237,237',acc2:'#FFFFFF',btn:'#555555',h:null},
+  démon:{n:'démon',acc:'#E0262B',rgb:'224,38,43',acc2:'#FF5A5A',btn:'#7A0D12',h:0}
 };
 function appliquerCouleur(nom){
   const c=COULEURS[nom]||COULEURS.orange, r=document.documentElement.style;
@@ -448,6 +449,8 @@ function appliquerCouleur(nom){
   // les icônes dorées suivent la couleur choisie
   r.setProperty('--filtre', c.h===null ? 'grayscale(1) brightness(1.15)' : (c.h===22 ? 'none' : 'hue-rotate('+(c.h-22)+'deg)'));
   window.COULEUR=c;
+  document.documentElement.classList.toggle('demon', c.n==='démon');
+  if (window.lexosDemon) window.lexosDemon.maj();
 }
 try { appliquerCouleur(JSON.parse(localStorage.getItem('lexos.couleur')||'"orange"')); } catch(e){ appliquerCouleur('orange'); }
 </script>
@@ -1475,6 +1478,55 @@ charger();
 
 /* ===== fin du démarrage ===== */
 setTimeout(()=>{ const b=$('#boot'); b.style.opacity='0'; setTimeout(()=>b.remove(),550); }, calme?200:2100);
+</script>
+<!-- ===== Thème Démon : yeux rouges sur l'accueil + démon qui surgit à l'ouverture des applis ===== -->
+<style>
+#demonYeux{display:none;justify-content:center;gap:34px;margin:18px 0 6px;filter:drop-shadow(0 0 14px rgba(224,38,43,.65));transition:transform .2s ease;cursor:pointer}
+html.demon #demonYeux{display:flex}
+#demonYeux .oe,#demonSurgit .oe{width:92px;height:48px}
+#demonYeux svg,#demonSurgit svg{width:100%;height:100%;display:block}
+.oe.d{transform:scaleX(-1)}
+.dm-pau{transform-origin:50% 0;animation:dmCligne 5.5s infinite}
+#demonYeux.colere{filter:drop-shadow(0 0 28px rgba(255,40,40,1))}
+#demonYeux.colere .oe{animation:dmTremble .08s linear 6}
+#demonSurgit{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:rgba(0,0,0,.9);pointer-events:none;opacity:0}
+#demonSurgit .paire{display:flex;gap:44px;transform:scale(1.4);filter:drop-shadow(0 0 30px rgba(224,38,43,.9))}
+#demonSurgit p{margin:0;color:#E0262B;font:12px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase}
+#demonSurgit.on{animation:dmSurgit 1.1s ease-out}
+#demonSurgit.on .dm-pau{animation:dmOuvre 1.1s ease-out}
+@keyframes dmCligne{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
+@keyframes dmTremble{50%{translate:2px -1px}}
+@keyframes dmSurgit{0%{opacity:0}15%,70%{opacity:1}100%{opacity:0}}
+@keyframes dmOuvre{0%{transform:scaleY(1)}30%,100%{transform:scaleY(0)}}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="dmClip"><path d="M2 4 Q60 -2 118 28 Q70 70 2 4Z"/></clipPath></defs></svg>
+<div id="demonSurgit" aria-hidden="true"><div class="paire"></div><p id="demonTxt"></p></div>
+<script>
+(function(){
+  const OEIL='<svg viewBox="0 0 120 62"><path d="M2 4 Q60 -2 118 28 Q70 70 2 4Z" fill="#E0262B"/><rect class="dm-pau" x="0" y="0" width="120" height="62" fill="#000" clip-path="url(#dmClip)"/></svg>';
+  const PAIRE='<div class="oe">'+OEIL+'</div><div class="oe d">'+OEIL+'</div>';
+  const actif=()=>document.documentElement.classList.contains('demon');
+  const yeux=document.createElement('div'); yeux.id='demonYeux'; yeux.innerHTML=PAIRE;
+  const heure=document.querySelector('#accueil .heure'); if(heure) heure.after(yeux);
+  document.querySelector('#demonSurgit .paire').innerHTML=PAIRE;
+  const vib=()=>{ try{ B.vibrate(); }catch(e){} };
+  addEventListener('pointermove',e=>{ if(!actif()) return; const r=yeux.getBoundingClientRect(); if(!r.width) return;
+    const dx=Math.max(-1,Math.min(1,(e.clientX-(r.left+r.width/2))/200)), dy=Math.max(-1,Math.min(1,(e.clientY-(r.top+r.height/2))/200));
+    yeux.style.transform='translate('+dx*10+'px,'+dy*6+'px)'; });
+  yeux.addEventListener('click',()=>{ yeux.classList.remove('colere'); void yeux.offsetWidth; yeux.classList.add('colere'); vib(); setTimeout(()=>yeux.classList.remove('colere'),1400); });
+  function surgir(txt){ const s=document.getElementById('demonSurgit'); document.getElementById('demonTxt').textContent=txt||''; s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); vib(); }
+  // Le démon surgit avant chaque ouverture d'appli (SMS compris)
+  const lancerOrigine=window.lancer;
+  if(typeof lancerOrigine==='function'){
+    window.lancer=function(app, el){
+      if(!actif()) return lancerOrigine(app, el);
+      const sms=/messaging/.test(app.pkg||'');
+      surgir(sms ? "le démon lit tes messages" : (app.nom||app.label||app.n||''));
+      setTimeout(()=>lancerOrigine(app, el), 650);
+    };
+  }
+  window.lexosDemon={surgir, maj(){}};
+})();
 </script>
 </body>
 </html>
