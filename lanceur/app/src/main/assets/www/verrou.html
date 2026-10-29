@@ -123,7 +123,8 @@ const COULEURS={
   cyan:{n:'cyan',acc:'#22D3EE',rgb:'34,211,238',acc2:'#7DE8F7',btn:'#0E7490',h:188},
   violet:{n:'violet',acc:'#B46BFF',rgb:'180,107,255',acc2:'#D0A5FF',btn:'#6D28D9',h:270},
   rose:{n:'rose',acc:'#FF2BD6',rgb:'255,43,214',acc2:'#FF7FE6',btn:'#A21CAF',h:312},
-  blanc:{n:'blanc',acc:'#EDEDED',rgb:'237,237,237',acc2:'#FFFFFF',btn:'#555555',h:null}
+  blanc:{n:'blanc',acc:'#EDEDED',rgb:'237,237,237',acc2:'#FFFFFF',btn:'#555555',h:null},
+  démon:{n:'démon',acc:'#E0262B',rgb:'224,38,43',acc2:'#FF5A5A',btn:'#7A0D12',h:0}
 };
 function appliquerCouleur(nom){
   const c=COULEURS[nom]||COULEURS.orange, r=document.documentElement.style;
@@ -131,6 +132,7 @@ function appliquerCouleur(nom){
   // les icônes dorées suivent la couleur choisie
   r.setProperty('--filtre', c.h===null ? 'grayscale(1) brightness(1.15)' : (c.h===22 ? 'none' : 'hue-rotate('+(c.h-22)+'deg)'));
   window.COULEUR=c;
+  document.documentElement.classList.toggle('demon', c.n==='démon');
 }
 try { appliquerCouleur(JSON.parse(localStorage.getItem('lexos.couleur')||'"orange"')); } catch(e){ appliquerCouleur('orange'); }
 </script>
@@ -313,6 +315,24 @@ $('#empreinte').onclick=deverrouiller;
 let lampe=false;
 $('#lampe').onclick=()=>{ lampe=!lampe; lampe=!!V.lampe(lampe); $('#lampe').classList.toggle('on',lampe); V.vibrate(); };
 $('#camera').onclick=()=>{ V.vibrate(); V.camera(); };
+</script>
+<!-- Thème Démon : yeux rouges sur l'écran de verrouillage -->
+<style>
+#dmYeuxV{display:none;justify-content:center;gap:30px;margin:16px 0;filter:drop-shadow(0 0 14px rgba(224,38,43,.65))}
+html.demon #dmYeuxV{display:flex}
+#dmYeuxV .oe{width:84px;height:44px}#dmYeuxV svg{width:100%;height:100%;display:block}
+#dmYeuxV .oe.d{transform:scaleX(-1)}
+#dmYeuxV .dm-pau{transform-origin:50% 0;animation:dmCligneV 5.5s infinite}
+@keyframes dmCligneV{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="dmClipV"><path d="M2 4 Q60 -2 118 28 Q70 70 2 4Z"/></clipPath></defs></svg>
+<script>
+(function(){
+  const O='<svg viewBox="0 0 120 62"><path d="M2 4 Q60 -2 118 28 Q70 70 2 4Z" fill="#E0262B"/><rect class="dm-pau" x="0" y="0" width="120" height="62" fill="#000" clip-path="url(#dmClipV)"/></svg>';
+  const y=document.createElement('div'); y.id='dmYeuxV'; y.setAttribute('aria-hidden','true');
+  y.innerHTML='<div class="oe">'+O+'</div><div class="oe d">'+O+'</div>';
+  const h=document.getElementById('horloge'); if(h) h.after(y);
+})();
 </script>
 </body>
 </html>
