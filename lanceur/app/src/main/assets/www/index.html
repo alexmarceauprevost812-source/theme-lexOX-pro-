@@ -97,6 +97,7 @@ img{-webkit-user-drag:none}
 .tuile{position:relative;width:60px;height:60px;border-radius:18px;background:var(--mat1);box-shadow:inset 0 0 0 1px var(--ligne);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:transform .15s ease}
 .tuile img.lex{width:100%;height:100%;object-fit:cover}
 .tuile img.sys{width:42px;height:42px;border-radius:10px}
+.tuile img.sys.plein{width:100%;height:100%;border-radius:0;object-fit:cover}
 .tuile .reflet{position:absolute;top:-20px;left:0;width:16px;height:110px;background:rgba(255,255,255,.10);animation:sheen 4s ease-in-out infinite}
 .app:active .tuile{transform:scale(.9)}
 .app .nom{font-size:10.5px;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -686,6 +687,10 @@ function iconeLexos(app){
   return null;
 }
 // YouTube et YouTube Music : logo officiel de l'appli + petite animation lecture / pause (rouge et blanc)
+/*  Le logo OFFICIEL, en grand : l'icône fournie par l'appli elle-même
+    (Android, getApplicationIcon), qui remplit la tuile au lieu d'être posée
+    petite au milieu. Demande d'Alex (1er nov.) pour YouTube Music. */
+const OFFICIELS = new Set(['com.google.android.apps.youtube.music','app.revanced.android.apps.youtube.music']);
 const MEDIA_PP = new Set(['com.google.android.youtube','com.google.android.apps.youtube.music','app.revanced.android.youtube','app.revanced.android.apps.youtube.music','com.google.android.apps.youtube.kids']);
 const CATS = {
   outils:['terminal','hacker','diagnostic','fichiers','securite','mises-a-jour','opencode','reglages','partage'],
@@ -778,7 +783,7 @@ function tuile(app, i, base){
   const img=document.createElement('img'); img.alt='';
   const lx=iconeLexos(app);
   if (lx){ img.src='icones/lexos-'+lx+'.png'; img.className='lex'; }
-  else { img.className='sys'; img.loading='lazy'; const u=B.getIcon(app.pkg); if(u) img.src=u; else { img.src= app.pkg==='com.openai.chatgpt' ? 'icones/lexos-chatgpt.png' : MEDIA_PP.has(app.pkg) ? (app.pkg.includes('music')?'icones/lexos-yt-musique.png':'icones/lexos-youtube.png') : 'icones/lexos-terminal.png'; img.className='lex'; } }
+  else { img.className=OFFICIELS.has(app.pkg)?'sys plein':'sys'; img.loading='lazy'; const u=B.getIcon(app.pkg); if(u) img.src=u; else { img.className='sys'; img.src= app.pkg==='com.openai.chatgpt' ? 'icones/lexos-chatgpt.png' : MEDIA_PP.has(app.pkg) ? (app.pkg.includes('music')?'icones/lexos-yt-musique.png':'icones/lexos-youtube.png') : 'icones/lexos-terminal.png'; img.className='lex'; } }
   t.appendChild(img);
   if (MEDIA_PP.has(app.pkg)){ const pp=document.createElement('span'); pp.className='pp'; pp.innerHTML='<i class="pp-play"></i><i class="pp-pause"><b></b><b></b></i>'; t.appendChild(pp); }
   const r=document.createElement('span'); r.className='reflet'; r.style.animationDelay=(i*0.37%4).toFixed(2)+'s'; t.appendChild(r);
