@@ -66,6 +66,15 @@ img{-webkit-user-drag:none}
 @keyframes hanflick{0%{opacity:.25;transform:scale(1.25) translateY(-6%)}100%{opacity:1;transform:none}}
 @keyframes tombe{0%{transform:translateY(-85%) scaleY(1.15);opacity:0;color:#A6FF00;text-shadow:0 0 18px #A6FF00}45%{opacity:1;color:#D8FF9A;text-shadow:0 0 14px rgba(166,255,0,.7)}100%{transform:none;opacity:1;color:#fff;text-shadow:0 0 8px rgba(var(--acc-rgb),.3)}}
 #date{font-size:13px;color:var(--gris);text-align:right;line-height:1.5}
+/* Heure en GROS (demande d'Alex, 1er nov.) : la date passe dessous, à gauche. */
+.heure{flex-direction:column;align-items:flex-start;gap:4px}
+#horloge{font-size:clamp(84px,26vw,118px)}
+#date{text-align:left}
+/* Écriture de code en fond, visible à 40 % : derrière l'accueil, ne prend aucun toucher. */
+#codeFond{position:fixed;inset:0;margin:0;padding:calc(var(--haut) + 8px) 14px 0;overflow:hidden;opacity:.4;pointer-events:none;
+  font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.55;color:#8A8A8A;white-space:pre-wrap;word-break:break-all}
+#codeFond .k{color:var(--orange)} #codeFond .c{color:#5A5A5A} #codeFond .cur{display:inline-block;width:7px;height:12px;background:var(--orange);vertical-align:-2px;animation:clign 1s steps(1) infinite}
+@keyframes clign{50%{opacity:0}}
 #date span{color:var(--orange)}
 
 .term{border-radius:16px;background:rgba(10,10,10,.92);overflow:hidden;animation:glow 4s ease-in-out infinite}
@@ -457,6 +466,7 @@ try { appliquerCouleur(JSON.parse(localStorage.getItem('lexos.couleur')||'"orang
 </head>
 <body>
 <div id="fond"></div>
+<pre id="codeFond" aria-hidden="true"></pre>
 <div id="pluie" aria-hidden="true"></div>
 <div id="lignes" aria-hidden="true"></div>
 <div id="balai" aria-hidden="true"></div>
@@ -1478,6 +1488,39 @@ charger();
 
 /* ===== fin du démarrage ===== */
 setTimeout(()=>{ const b=$('#boot'); b.style.opacity='0'; setTimeout(()=>b.remove(),550); }, calme?200:2100);
+
+/* ===== écriture de code en fond (40 %) =====
+   Demande d'Alex (1er nov.) : « animation écriture de code » derrière l'accueil.
+   Le code s'écrit caractère par caractère, ligne après ligne ; l'écran plein,
+   il repart du haut. Arrêté quand le lanceur n'est pas visible (batterie). */
+(function(){
+  const pre=document.getElementById('codeFond'); if(!pre) return;
+  const MOTS=/\b(def|import|from|return|if|else|for|in|while|const|let|function|async|await|sudo|apt|git|echo|export|class)\b/g;
+  const CODE=[
+    '#!/usr/bin/env bash','# LexOS PRO — démarrage du lanceur','set -euo pipefail','export LEXOS_THEME=professionnel',
+    'echo "[ OK ] noyau chargé"','sudo systemctl start lexos-moteur','git pull origin ti-lexos-pro','',
+    'import os, time','from lexos import bureau, reseau','','def demarrer():','    bureau.theme("orange")',
+    '    for appli in bureau.applis():','        appli.animer("ecriture")','    return reseau.etat()','',
+    'const heure = new Date().toLocaleTimeString("fr-CA")','async function lancer(app) {','  await LexOS.ouvrir(app)','}','',
+    'while true; do lexfetch; sleep 60; done','echo "Play. Build. Own your machine."',''
+  ];
+  const echap=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const peindre=t=>{ const e=echap(t); return /^\s*#/.test(t) ? '<span class="c">'+e+'</span>' : e.replace(MOTS,'<span class="k">$1</span>'); };
+  let faites=[], ligne=0, car=0;
+  function tour(){
+    if (document.hidden || (document.getElementById('accueil')||{}).classList?.contains('cache')) return;
+    const t=CODE[ligne % CODE.length];
+    if (car <= t.length){
+      pre.innerHTML=faites.map(peindre).join('\n')+(faites.length?'\n':'')+peindre(t.slice(0,car))+'<span class="cur"></span>';
+      car+=1+Math.floor(Math.random()*2);
+    } else {
+      faites.push(t); ligne++; car=0;
+      //  L'écran est plein : on fait défiler — les plus vieilles lignes partent par le haut.
+      while (faites.length && pre.scrollHeight > pre.clientHeight) { faites.shift(); pre.innerHTML=faites.map(peindre).join('\n'); }
+    }
+  }
+  setInterval(tour, 55);
+})();
 </script>
 <!-- ===== Thème Démon : yeux rouges sur l'accueil + démon qui surgit à l'ouverture des applis ===== -->
 <style>
