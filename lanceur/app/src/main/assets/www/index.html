@@ -266,6 +266,21 @@ img{-webkit-user-drag:none}
 /* ---------- page Santé de l'appareil ---------- */
 #sante{position:fixed;inset:0;z-index:43;background:#000;padding:var(--haut) 0 var(--bas);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
 #sante.ouvert{transform:none}
+/* ===== aide à l'installation : jumelage avec un PC LexOS ===== */
+#jumelage{position:fixed;inset:0;z-index:43;background:#000;padding:var(--haut) 0 var(--bas);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+#jumelage.ouvert{transform:none}
+#jumCorps{flex:1;overflow-y:auto;padding:4px 16px 30px;scrollbar-width:none;display:flex;flex-direction:column;gap:10px}
+#jumCorps::-webkit-scrollbar{display:none}
+.jum-carte{padding:14px;border-radius:16px;background:var(--mat1);box-shadow:inset 0 0 0 1px var(--ligne);font-size:12.5px;line-height:1.5;color:var(--blanc)}
+.jum-carte h3{margin:0 0 4px;font-size:14px;color:#fff}
+.jum-carte.grave{box-shadow:inset 0 0 0 1.5px #FF3B3B}.jum-carte.grave h3{color:#FF6B6B}
+.jum-carte.attention{box-shadow:inset 0 0 0 1.5px var(--orange)}.jum-carte.attention h3{color:var(--acc2)}
+.jum-carte.ok{box-shadow:inset 0 0 0 1.5px #39FF88}.jum-carte.ok h3{color:#39FF88}
+.jum-carte .sol{margin-top:8px;padding:8px 10px;border-radius:10px;background:#000;color:#EDEDED}
+.jum-carte .sol b{color:var(--orange)}
+.jum-ligne{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid #1a1a1a}.jum-ligne span:first-child{color:var(--gris)}
+.jum-form{display:flex;gap:8px}.jum-form input{flex:1;min-width:0;height:46px;border-radius:12px;border:1px solid var(--ligne);background:#0A0A0A;color:#fff;padding:0 12px;font:inherit}
+.jum-err{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#FF8A8A;white-space:pre-wrap;word-break:break-all}
 #santeCorps{flex:1;overflow-y:auto;padding:4px 16px 30px;scrollbar-width:none}
 #santeCorps::-webkit-scrollbar{display:none}
 .score{display:flex;align-items:center;gap:16px;padding:16px;border-radius:18px;background:var(--mat1);box-shadow:inset 0 0 0 1px var(--orange),0 0 24px rgba(var(--acc-rgb),.18);margin-top:6px}
@@ -567,6 +582,13 @@ try { appliquerCouleur(JSON.parse(localStorage.getItem('lexos.couleur')||'"orang
     <h1 style="margin:2px 0 0;font-family:Orbitron;font-weight:700;font-size:24px;color:#fff">Santé de l'appareil</h1>
   </div>
   <div id="santeCorps"></div>
+</section>
+<section id="jumelage" aria-label="Aide à l'installation LexOS">
+  <div class="tete" style="padding:0 16px 10px;display:flex;flex-direction:column;gap:2px">
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><span class="p">alex@lexos-pro</span><span class="p2">:~$</span> lexos jumelage</span><button class="fermer" id="jumFermer" aria-label="Fermer" style="width:40px;height:40px;border-radius:12px;border:1px solid var(--ligne);background:var(--mat1);color:var(--gris);font-size:16px;cursor:pointer">✕</button></div>
+    <h1 style="margin:2px 0 0;font-family:Orbitron;font-weight:700;font-size:22px;color:#fff">Aide à l'installation</h1>
+  </div>
+  <div id="jumCorps"></div>
 </section>
 <section id="param" aria-label="Paramètres LexOS PRO">
   <div class="tete">
@@ -1097,6 +1119,57 @@ function rendreSante(){
 function ouvrirSante(){ rendreSante(); $('#sante').classList.add('ouvert'); B.vibrate(); }
 function fermerSante(){ $('#sante').classList.remove('ouvert'); }
 $('#santeFermer').onclick=fermerSante;
+
+/* ===== aide à l'installation : jumelage avec un PC LexOS =====
+   Sur le PC : « lexos jumelage » (ou le menu « Aide à l'installation (téléphone) »)
+   affiche un QR. Ici : on le scanne (ou on tape l'adresse et le code), et on
+   voit ce qui bloque l'installation, avec la solution. LECTURE SEULE : le
+   téléphone ne contrôle rien sur le PC. */
+let JUM=lire('lexos.jumelage',null);   // {h,p,t} : le dernier PC jumelé
+const echJ=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const goJ=n=>n>=1e12?(n/1e12).toFixed(1)+' To':(n/1e9).toFixed(0)+' Go';
+function ouvrirJumelage(){ $('#jumelage').classList.add('ouvert'); B.vibrate(); if(JUM) chargerJumelage(); else vueJumelage(); }
+function fermerJumelage(){ $('#jumelage').classList.remove('ouvert'); }
+$('#jumFermer').onclick=fermerJumelage;
+function vueJumelage(msg){
+  $('#jumCorps').innerHTML=(msg?'<div class="jum-carte attention"><h3>'+echJ(msg)+'</h3></div>':'')
+   +'<div class="jum-carte"><h3>1. Sur le PC</h3>Démarre la clé LexOS, puis ouvre <b style="color:var(--orange)">Aide à l\'installation (téléphone)</b> dans le menu, ou tape <b style="color:var(--orange)">lexos jumelage</b> dans un terminal. Un code QR s\'affiche.<br><br>Le PC et le téléphone doivent être sur le même Wi-Fi (ou le PC branché par câble à la même box).</div>'
+   +'<button class="btn-o" id="jumScan" style="width:100%;height:52px;color:#fff;font-size:14px;font-weight:700">⌖ 2. Scanner le code QR</button>'
+   +'<div class="jum-carte"><h3>Ou à la main</h3><div class="jum-form"><input id="jumIp" inputmode="decimal" placeholder="adresse ex. 192.168.1.20" value="'+echJ(JUM?JUM.h:'')+'"><input id="jumCode" inputmode="numeric" maxlength="7" placeholder="code" style="flex:0 0 96px"></div>'
+   +'<button class="btn-o" id="jumOk" style="width:100%;height:46px;margin-top:8px;color:#fff;font-weight:700">$ jumeler</button></div>';
+  $('#jumScan').onclick=()=>{ try{ B.scannerJumelage(); }catch(e){ toast('scanner indisponible : utilise l\'adresse et le code'); } };
+  $('#jumOk').onclick=()=>{ const h=$('#jumIp').value.trim(), c=$('#jumCode').value.replace(/\D/g,'');
+    if(!h||c.length!==6){ toast('<span style="color:var(--acc)">[ ? ]</span> adresse et code à 6 chiffres'); return; }
+    JUM={h,p:7870,t:c}; chargerJumelage(); };
+}
+window.lexosJumeler=function(texte){
+  const m=/^lexos:\/\/jumeler\?(.*)$/.exec(texte||'');
+  if(!m){ if(texte) toast('<span style="color:var(--acc)">[ ? ]</span> ce QR n\'est pas un PC LexOS'); if(!$('#jumelage').classList.contains('ouvert')) $('#jumelage').classList.add('ouvert'); vueJumelage(); return; }
+  const q=new URLSearchParams(m[1]); JUM={h:q.get('h')||'',p:+(q.get('p')||7870),t:q.get('t')||''};
+  $('#jumelage').classList.add('ouvert'); chargerJumelage();
+};
+function chargerJumelage(){
+  $('#jumCorps').innerHTML='<div class="jum-carte"><h3>Connexion au PC '+echJ(JUM.h)+'…</h3>lecture du diagnostic <span class="cur"></span></div>';
+  setTimeout(()=>{
+    let d; try{ d=JSON.parse(B.jumelageLire(JUM.h, JUM.p, JUM.t)); }catch(e){ d={erreur:'injoignable'}; }
+    if(d.erreur){ const raisons={code:'Code refusé — relance « lexos jumelage » sur le PC et rescanne.',adresse:'Adresse invalide : seulement un PC de ton réseau local (192.168…, 10…).',injoignable:'PC injoignable — même Wi-Fi ? « lexos jumelage » toujours ouvert sur le PC ?'};
+      if(d.erreur==='code'){ JUM=null; try{ localStorage.removeItem('lexos.jumelage'); }catch(e){} }
+      vueJumelage(raisons[d.erreur]||'Erreur'); return; }
+    ecrire('lexos.jumelage',JUM); rendreJumelage(d);
+  },60);
+}
+function rendreJumelage(d){
+  const m=d.machine||{}, g=d.graphique||{};
+  let h=(d.conseils||[]).map(c=>'<div class="jum-carte '+echJ(c.niveau)+'"><h3>'+(c.niveau==='grave'?'✕ ':c.niveau==='ok'?'✓ ':'! ')+echJ(c.titre)+'</h3>'+echJ(c.detail)+'<div class="sol"><b>→</b> '+echJ(c.solution)+'</div></div>').join('');
+  const L=(a,b)=>'<div class="jum-ligne"><span>'+a+'</span><span>'+echJ(b)+'</span></div>';
+  h+='<div class="jum-carte"><h3>PC</h3>'+L('machine',m.modele||m.nom)+L('LexOS',m.lexos||'—')+L('session',m.session_live?'clé (live)':'installé')+L('démarrage',m.demarrage)+L('Secure Boot',m.secure_boot)+L('nomodeset',m.nomodeset?'oui':'non')+L('mémoire',(m.memoire_go||'?')+' Go')+'</div>';
+  h+='<div class="jum-carte"><h3>Carte graphique</h3>'+((g.cartes||[]).map(c=>L(echJ(c.nom.replace(/^.*?\]: /,'').slice(0,34)),c.pilote||'sans pilote')).join('')||'aucune vue')+L('pilote NVIDIA',g.nvidia_charge?'chargé':'non chargé')+'</div>';
+  h+='<div class="jum-carte"><h3>Disques</h3>'+(d.disques||[]).map(x=>L((x.amovible?'🔌 ':'💽 ')+echJ(x.nom+' '+(x.modele||'')),goJ(x.taille))+(x.partitions||[]).map(p=>L('&nbsp;&nbsp;└ '+echJ(p.nom),(p.fs||'—')+' · '+goJ(p.taille))).join('')).join('')+'</div>';
+  if((d.erreurs||[]).length) h+='<div class="jum-carte"><h3>Erreurs du démarrage</h3><div class="jum-err">'+d.erreurs.map(echJ).join('\n')+'</div></div>';
+  h+='<button class="btn-o" id="jumMaj" style="width:100%;height:48px;color:#fff;font-weight:700">↻ actualiser</button><button class="btn-o" id="jumAutre" style="width:100%;height:44px;background:var(--mat2);color:var(--gris)">jumeler un autre PC</button>';
+  $('#jumCorps').innerHTML=h; $('#jumMaj').onclick=chargerJumelage; $('#jumAutre').onclick=()=>{ JUM=null; vueJumelage(); };
+}
+try{ const l=B.jumelageEnAttente&&B.jumelageEnAttente(); if(l) setTimeout(()=>lexosJumeler(l),1500); }catch(e){}
 // toucher la batterie dans le widget ouvre la santé
 document.addEventListener('click',e=>{ if(e.target.closest('#batt')) ouvrirSante(); });
 
@@ -1138,6 +1211,7 @@ function sectionsParam(){
     ]},
     {t:'SYSTÈME', l:[
       {i:'♥', t:'Santé de l\'appareil', s:'batterie, stockage, mémoire, chaleur', a:()=>{ ouvrirSante(); }},
+      {i:'⇄', t:'Aide à l\'installation LexOS', s:'jumeler le PC : voir ce qui bloque l\'installation', a:()=>{ ouvrirJumelage(); }},
       {i:'⚙', t:'Réglages Android', s:'Wi-Fi, son, écran, batterie…', a:()=>B.openSettings()},
       {i:'⌂', t:'Appli d\'accueil par défaut', s:'garder LexOS PRO ou revenir à One UI', a:()=>{ try{ B.appliAccueil(); }catch(err){ B.openSettings(); } }}
     ]}
@@ -1479,8 +1553,8 @@ $('#accueil').addEventListener('pointerdown',e=>{ if(e.target.closest('button,in
 ['pointerup','pointermove','pointercancel'].forEach(ev=>$('#accueil').addEventListener(ev,()=>clearTimeout(fondAppui)));
 
 /* ===== appels depuis Android ===== */
-window.lexosBack=()=>{ if($('#ia').classList.contains('ouvert')) iaFermer(); else if(document.querySelector('.feuille.ouvert')){ fermerFeuilles(); $('#voile').classList.remove('on'); } else if($('#sante').classList.contains('ouvert')) fermerSante(); else if($('#param').classList.contains('ouvert')) fermerParam(); else if($('#composeur').classList.contains('ouvert')) fermerComposeur(); else if($('#choix').classList.contains('ouvert')) $('#choix').classList.remove('ouvert'); else if($('#edge').classList.contains('ouvert')) fermerEdge(); else if($('#menu').classList.contains('ouvert')) fermerMenu(); else if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
-window.lexosHome=()=>{ fermerSante(); fermerParam(); fermerMenu(); fermerEdge(); fermerComposeur(); $('#choix').classList.remove('ouvert'); if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
+window.lexosBack=()=>{ if($('#ia').classList.contains('ouvert')) iaFermer(); else if(document.querySelector('.feuille.ouvert')){ fermerFeuilles(); $('#voile').classList.remove('on'); } else if($('#jumelage').classList.contains('ouvert')) fermerJumelage(); else if($('#sante').classList.contains('ouvert')) fermerSante(); else if($('#param').classList.contains('ouvert')) fermerParam(); else if($('#composeur').classList.contains('ouvert')) fermerComposeur(); else if($('#choix').classList.contains('ouvert')) $('#choix').classList.remove('ouvert'); else if($('#edge').classList.contains('ouvert')) fermerEdge(); else if($('#menu').classList.contains('ouvert')) fermerMenu(); else if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
+window.lexosHome=()=>{ fermerJumelage(); fermerSante(); fermerParam(); fermerMenu(); fermerEdge(); fermerComposeur(); $('#choix').classList.remove('ouvert'); if($('#tiroir').classList.contains('ouvert')) fermerTiroir(); else allerPage(0); };
 window.lexosResume=()=>{ tic(true); if($('#param').classList.contains('ouvert')) rendreParam(); };
 window.lexosRefresh=()=>{ charger(); };
 

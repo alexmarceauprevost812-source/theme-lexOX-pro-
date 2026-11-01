@@ -11,8 +11,8 @@ android {
         applicationId = "ca.lexos.lanceur"
         minSdk = 26
         targetSdk = 34
-        versionCode = 18
-        versionName = "2.3"
+        versionCode = 19
+        versionName = "2.4"
     }
 
     // Clé de signature d'Alex Marceau Prevost : fournie par les Secrets GitHub
@@ -50,4 +50,6 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.webkit:webkit:1.11.0")
+    // Scanner de code QR (jumelage avec un PC LexOS), sans les services Google.
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }

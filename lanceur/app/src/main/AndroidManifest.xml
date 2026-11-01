@@ -18,6 +18,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <!-- Scanner le code QR du PC LexOS (aide à l'installation). -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:name=".LexOSApp"
@@ -41,6 +44,14 @@
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Jumelage avec un PC LexOS : le code QR de « lexos jumelage »
+                 (lexos://jumeler?h=…&p=…&t=…) ouvre directement l'aide à l'installation. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="lexos" android:host="jumeler" />
             </intent-filter>
         </activity>
 

@@ -23,6 +23,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.graphics.drawable.toBitmap
 import androidx.webkit.WebViewAssetLoader
+import com.google.zxing.integration.android.IntentIntegrator
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -39,6 +40,9 @@ class MainActivity : Activity() {
     private val iconCache = HashMap<String, String>()
     private var choixFichier: ValueCallback<Array<Uri>>? = null
     private val CODE_PHOTO = 42
+    // Jumelage avec un PC LexOS (aide à l'installation) : un lien lexos://jumeler
+    // arrivé avant que la page soit prête attend ici que le JS le réclame.
+    @Volatile private var jumelageEnAttente: String? = null
     private val CODE_APPEL = 7
     private var numeroEnAttente: String? = null
 
@@ -72,6 +76,7 @@ class MainActivity : Activity() {
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
 
+        intent?.data?.takeIf { it.scheme == "lexos" }?.let { jumelageEnAttente = it.toString() }
         web = WebView(this).apply {
             setBackgroundColor(0xFF000000.toInt())
             settings.javaScriptEnabled = true
@@ -116,6 +121,12 @@ class MainActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        //  Le scanner de QR (zxing) : le texte lu part au JS, qui le vérifie.
+        IntentIntegrator.parseActivityResult(requestCode, resultCode, data)?.let { r ->
+            val texte = r.contents ?: ""
+            web.evaluateJavascript("window.lexosJumeler && lexosJumeler(" + JSONObject.quote(texte) + ")", null)
+            return
+        }
         if (requestCode == CODE_PHOTO) {
             choixFichier?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
             choixFichier = null
@@ -152,6 +163,11 @@ class MainActivity : Activity() {
     // Bouton « accueil » pendant qu'on est déjà sur le lanceur : revenir à l'accueil.
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        val lien = intent?.data?.takeIf { it.scheme == "lexos" }?.toString()
+        if (lien != null) {
+            web.evaluateJavascript("window.lexosJumeler && lexosJumeler(" + JSONObject.quote(lien) + ")", null)
+            return
+        }
         web.evaluateJavascript("window.lexosHome && lexosHome()", null)
     }
 
@@ -182,6 +198,43 @@ class MainActivity : Activity() {
     } catch (_: Exception) { null }
 
     inner class Bridge {
+
+        // ─── Jumelage avec un PC LexOS (aide à l'installation) ───────────────
+        // Le PC sert un diagnostic EN LECTURE SEULE (lexos jumelage) ; on ne
+        // joint QUE des adresses du réseau local, jamais Internet.
+        @JavascriptInterface
+        fun jumelageEnAttente(): String { val l = jumelageEnAttente ?: ""; jumelageEnAttente = null; return l }
+
+        @JavascriptInterface
+        fun scannerJumelage() {
+            runOnUiThread {
+                try {
+                    IntentIntegrator(this@MainActivity)
+                        .setDesiredBarcodeFormats(IntentIntegrator.QR_CODE)
+                        .setPrompt("Scanne le code QR affiché sur le PC LexOS")
+                        .setBeepEnabled(false)
+                        .setOrientationLocked(true)
+                        .initiateScan()
+                } catch (e: Exception) {
+                    web.evaluateJavascript("window.lexosJumeler && lexosJumeler('')", null)
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun jumelageLire(hote: String, port: Int, jeton: String): String {
+            val local = Regex("^(10\\.\\d{1,3}|192\\.168|172\\.(1[6-9]|2\\d|3[01]))\\.\\d{1,3}\\.\\d{1,3}$")
+            if (!local.matches(hote)) return "{\"erreur\":\"adresse\"}"
+            if (port !in 1024..65535 || jeton.length > 128) return "{\"erreur\":\"adresse\"}"
+            return try {
+                val c = java.net.URL("http://$hote:$port/api/diagnostic").openConnection() as java.net.HttpURLConnection
+                c.connectTimeout = 4000; c.readTimeout = 12000
+                c.setRequestProperty("X-Jeton", jeton)
+                val code = c.responseCode
+                if (code == 403) return "{\"erreur\":\"code\"}"
+                c.inputStream.bufferedReader().use { it.readText() }
+            } catch (e: Exception) { "{\"erreur\":\"injoignable\"}" }
+        }
 
         @JavascriptInterface
         fun getApps(): String {
