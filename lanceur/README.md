@@ -19,6 +19,26 @@ widget `neofetch` avec la mascotte, tuiles qui « popent », éclair orange au l
 - **ChatGPT** : la vraie icône de l'appli se construit (balayage + anneau vert lime) avant l'ouverture.
 - **Ta photo** : appui long sur le fond (ou toucher la photo du widget) → « changer ma photo du widget » / « changer l'image de fond » / « remettre les images LexOS ».
 
+## Terminal LexOS (bouton `>_`, version 2.5)
+Un bouton **`>_`** dans la barre de l'accueil (à gauche du composeur) ouvre **Termux** (`com.termux`).
+Si Termux n'est pas installé, un panneau l'explique et ouvre sa page **F-Droid**.
+
+Pour que Termux prenne l'allure LexOS (fond noir, texte blanc, curseur orange `#ff6a1a`) et obtienne les
+commandes `lexos`, `lexfetch` et le menu « Outils d'audit », **colle une seule fois** dans Termux le
+contenu de [`termux/setup-terminal-lexos.sh`](termux/setup-terminal-lexos.sh) — ou, depuis Termux :
+
+```
+curl -fsSL https://raw.githubusercontent.com/alexmarceauprevost812-source/theme-lexOX-pro-/main/lanceur/termux/setup-terminal-lexos.sh | bash
+```
+
+- Sans root. Relançable sans danger : il remplace sa propre configuration et sauvegarde ton ancien thème
+  (`colors.properties.bak-lexos`) et ton `.bashrc` (`.bashrc.bak-lexos`).
+- Si **LexOS Pro (l'APK complet)** est déjà ton Termux, le script s'arrête : cet APK a déjà sa commande `lexos`
+  (`--force` pour passer outre).
+- « Outils d'audit » (sans root, **usage légal seulement** : tes appareils / ton réseau) : `nmap` (mode connexion
+  `-sT`, pas de `-sS`/`-O`), `dig`, `traceroute`, et `sqlmap` (installé par `pip`, il n'est pas dans les dépôts
+  Termux). Chaque scan demande de confirmer que la cible t'appartient.
+
 ## Installer
 1. Onglet **Releases** → `lanceur-lexos-pro` → télécharge `LexOS-PRO-Lanceur.apk` sur le téléphone.
 2. Ouvre-le et autorise « Installer des applis inconnues » pour ton navigateur ou Mes fichiers.
