@@ -533,6 +533,7 @@ try { appliquerCouleur(JSON.parse(localStorage.getItem('lexos.couleur')||'"orang
       <label for="recherche">$</label>
       <input id="recherche" type="text" autocomplete="off" spellcheck="false" placeholder="chercher… ou ? pour l'IA">
       <button class="btn-o" type="button" id="iaBtn" aria-label="IA locale" aria-pressed="false" style="background:var(--mat2);box-shadow:inset 0 0 0 1px var(--orange)"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15.5l-1.8-4.7L5.5 9l4.7-1.3z" fill="none" stroke="#FFC53D" stroke-width="1.8" stroke-linejoin="round"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z" fill="#FFC53D"/></svg></button>
+      <button class="btn-o" type="button" id="ouvrirTerminal" aria-label="Terminal LexOS" title="Terminal LexOS" style="background:var(--mat2);box-shadow:inset 0 0 0 1px var(--orange)"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l6 6-6 6M12 18h8" fill="none" stroke="#FFC53D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="btn-o" type="button" id="ouvrirComposeur" aria-label="Composeur LexOS" style="background:var(--mat2);box-shadow:inset 0 0 0 1px var(--orange)">
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z" fill="none" stroke="#FFC53D" stroke-width="2" stroke-linejoin="round"/></svg>
     </button>
@@ -617,6 +618,11 @@ try { appliquerCouleur(JSON.parse(localStorage.getItem('lexos.couleur')||'"orang
 <div id="moteur" aria-hidden="true"><div class="noir"></div><canvas id="moteurPluie"></canvas><img id="moteurIco" alt=""><div id="moteurNom"></div><div id="moteurLigne"></div></div>
 <canvas id="matrix" aria-hidden="true"></canvas>
 <div id="matrixNom" aria-hidden="true"><b>LEXOS</b><span>root@lexos-pro:~# déverrouillé</span></div>
+<div class="feuille" id="termSheet" role="dialog" aria-label="Terminal LexOS">
+  <div class="titre">$ lexos --terminal</div>
+  <div style="font-size:13px;line-height:1.5;color:var(--blanc)">Le terminal LexOS utilise <b style="color:var(--acc)">Termux</b>, qui n'est pas installé sur ce téléphone. Installe-le depuis <b style="color:var(--acc)">F-Droid</b> (pas le Play Store), puis reviens appuyer sur ce bouton.</div>
+  <button class="btn-o" id="termFdroid" type="button" style="width:100%;height:46px;color:#fff;font-size:13px;font-weight:700">⬇ Ouvrir la page F-Droid de Termux</button>
+</div>
 <div class="feuille" id="couleurSheet">
   <div class="titre">$ lexos --couleur</div>
   <div id="couleurs"></div>
@@ -681,7 +687,7 @@ const B = window.LexOS || {
     ['Quick Share','com.samsung.android.app.sharelive'],['Dossier sécurisé','com.samsung.knox.securefolder'],['Entretien appareil','com.samsung.android.lool'],
     ['Play Store','com.android.vending'],['Gmail','com.google.android.gm'],['Spotify','com.spotify.music'],['Calendrier','com.samsung.android.calendar']
   ].map(([label,pkg])=>({label,pkg,cls:pkg+'.Main'}))),
-  getIcon: () => '', launch: (p)=>console.log('launch',p), appInfo(){}, battery: () => 78, device: () => 'SM-A556W',
+  getIcon: () => '', ouvrirTerminal: () => 'absent', ouvrirFDroidTermux(){ console.log('F-Droid Termux'); }, launch: (p)=>console.log('launch',p), appInfo(){}, battery: () => 78, device: () => 'SM-A556W',
   openSettings(){}, openWallpaper(){}, etat:()=>'{"notifs":true,"bannieres":true,"clavier":false}', activerNotifs(){}, activerBannieres(){}, activerClavier(){}, choisirClavier(){}, monIP:()=>'192.168.1.42', copier(){}, iaScanner(){ setTimeout(()=>lexosIA.trouve({url:'http://192.168.1.20:11434',nom:'alex-Alienware',modeles:['llama3.2:3b','qwen2.5-coder:7b']}),700); setTimeout(()=>lexosIA.scanFin('192.168.1.42'),1600); }, testBanniere(){}, appeler(n){console.log('appel',n)}, setVerrou(){}, essaiVerrou(){}, setCalme(){}, agendaPermis:()=>false, demanderAgenda(){}, ouvrirLien(u){console.log('lien',u)}, version:()=>'1.7-alex', appliAccueil(){}, batterieInfo:()=>'{"niveau":78,"charge":true}', reseau:()=>'{"type":"wifi","force":3}', setAccent(){}, iaDemander(u,m,h){ const r="Salut Alex! Je suis **Lex**, ton IA locale.\nExemple :\n```\nollama run llama3.2:1b\n```\nC'est tout."; let i=0; window.lexosIA.modele('llama3.2:3b'); const iv=setInterval(()=>{ if(i>=r.length){ clearInterval(iv); window.lexosIA.fin(); return; } window.lexosIA.morceau(r.slice(i,i+4)); i+=4; },40); }, expandNotifications(){}, search(q){console.log('search',q)}, vibrate(){}
 };
 
@@ -1036,6 +1042,14 @@ function ajouterChiffre(c,i,anim){
 function ouvrirComposeur(){ numero=''; $('#numero').innerHTML=''; $('#composeur').classList.add('ouvert'); B.vibrate(); }
 function fermerComposeur(){ $('#composeur').classList.remove('ouvert'); }
 $('#ouvrirComposeur').onclick=ouvrirComposeur;
+/* Terminal LexOS : ouvre Termux ; s'il est absent, explique et propose F-Droid. */
+$('#ouvrirTerminal').onclick=()=>{
+  let r='erreur'; try{ r=B.ouvrirTerminal(); }catch(e){}
+  if(r==='ok') return;
+  if(r==='absent'){ ouvrirFeuille('#termSheet'); return; }
+  toast('<span style="color:#ff5a4d">[ ERR ]</span> impossible d\'ouvrir le terminal');
+};
+$('#termFdroid').onclick=()=>{ B.ouvrirFDroidTermux(); fermerFeuilles(); $('#voile').classList.remove('on'); };
 $('#composeurFermer').onclick=fermerComposeur;
 let tEff=null;
 $('#composeurEffacer').addEventListener('pointerdown',()=>{ tEff=setTimeout(()=>{ numero=''; $('#numero').innerHTML=''; tEff='fait'; B.vibrate(); },550); });

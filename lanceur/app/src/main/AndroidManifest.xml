@@ -22,6 +22,11 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
+    <!-- Terminal LexOS : voir si Termux est installé (visibilité des paquets, Android 11+). -->
+    <queries>
+        <package android:name="com.termux" />
+    </queries>
+
     <application
         android:name=".LexOSApp"
         android:label="LexOS PRO"

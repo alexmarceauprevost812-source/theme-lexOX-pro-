@@ -34,6 +34,10 @@ import java.io.ByteArrayOutputStream
  * dans assets/www ; ce fichier ne fait que le pont avec Android :
  * lister les applis, les ouvrir, donner la batterie, ouvrir les réglages.
  */
+/** Terminal LexOS = Termux. L'adresse F-Droid est fixe : aucune URL ne vient du JavaScript. */
+private const val PAQUET_TERMUX = "com.termux"
+private const val URL_FDROID_TERMUX = "https://f-droid.org/packages/com.termux/"
+
 class MainActivity : Activity() {
 
     private lateinit var web: WebView
@@ -279,6 +283,31 @@ class MainActivity : Activity() {
                 } catch (e: Exception) {
                     packageManager.getLaunchIntentForPackage(pkg)?.let { startActivity(it) }
                 }
+            }
+        }
+
+        // ─── Terminal LexOS : ouvre Termux ───────────────────────────────────
+        // Renvoie "ok" (Termux lancé), "absent" (pas installé) ou "erreur".
+        @JavascriptInterface
+        fun ouvrirTerminal(): String = try {
+            val i = packageManager.getLaunchIntentForPackage(PAQUET_TERMUX)
+            if (i == null) "absent"
+            else {
+                runOnUiThread {
+                    try { startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) {}
+                }
+                "ok"
+            }
+        } catch (e: Exception) { "erreur" }
+
+        // Page F-Droid de Termux (la source d'installation que recommande LexOS).
+        @JavascriptInterface
+        fun ouvrirFDroidTermux() {
+            runOnUiThread {
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(URL_FDROID_TERMUX))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                } catch (_: Exception) {}
             }
         }
 
