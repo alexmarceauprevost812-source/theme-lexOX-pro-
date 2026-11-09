@@ -64,7 +64,7 @@ jobs:
       - name: Vérifier la signature
         run: |
           APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
-          $APKSIGNER verify --print-certs app/build/outputs/apk/release/app-release.apk | grep -i "certificate DN" || true
+          $APKSIGNER verify --print-certs app/build/outputs/apk/release/app-release.apk | grep -iE "certificate (DN|SHA-256)" || true
 
       - name: Renommer
         run: cp app/build/outputs/apk/release/app-release.apk LexOS-Demon.apk
@@ -74,7 +74,10 @@ jobs:
           name: LexOS-Demon-apk
           path: lanceur/LexOS-Demon.apk
 
+      # Seule la branche main met à jour l'APK public : un build de branche reste
+      # un simple artifact (onglet Actions), il n'écrase jamais la Release.
       - name: Publier un lien direct (Release publique)
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
